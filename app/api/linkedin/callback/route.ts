@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
     });
 
     destination.searchParams.set("linkedin", "connected");
+    destination.searchParams.set("message", "LinkedIn connected. Run sync to import posts, analytics, and rebuild Content DNA.");
   } catch (error) {
     destination.searchParams.set("linkedin", "error");
     destination.searchParams.set("message", error instanceof Error ? error.message : "LinkedIn connection failed.");

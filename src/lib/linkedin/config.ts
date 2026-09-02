@@ -1,5 +1,8 @@
+export const linkedInSetupMessage =
+  "LinkedIn OAuth is not configured yet. Add LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET, then restart the local server.";
+
 export class LinkedInSetupError extends Error {
-  constructor(message = "LinkedIn OAuth is not configured yet. Add LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET.") {
+  constructor(message = linkedInSetupMessage) {
     super(message);
     this.name = "LinkedInSetupError";
   }

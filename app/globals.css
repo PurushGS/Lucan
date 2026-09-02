@@ -377,6 +377,20 @@ select:focus {
   background: #fff3f5;
 }
 
+.status.success {
+  border-color: rgba(3, 148, 135, 0.35);
+  color: var(--teal-dark);
+  background: #eefbf8;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
 .draft-list {
   display: grid;
   gap: 10px;

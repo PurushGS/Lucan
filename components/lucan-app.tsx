@@ -28,6 +28,11 @@ import type {
 
 type View = "dashboard" | "generator" | "drafts" | "analytics" | "dna" | "settings";
 
+export type AppNotice = {
+  kind: "success" | "error";
+  message: string;
+};
+
 type GenerateResponse = {
   generationId: string;
   title: string;
@@ -71,13 +76,14 @@ const toneOptions = [
   "Passionate",
 ];
 
-export function LucanApp({ user }: { user: AppUser }) {
+export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | null; user: AppUser }) {
   const [view, setView] = useState<View>("dashboard");
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [dna, setDna] = useState<ContentDnaProfile | null>(null);
   const [dnaRecord, setDnaRecord] = useState<ContentDnaRecord | null>(null);
   const [linkedinStatus, setLinkedInStatus] = useState<LinkedInStatus | null>(null);
+  const [notice, setNotice] = useState<AppNotice | null>(initialNotice);
 
   const refresh = useCallback(async () => {
     const [draftResponse, analyticsResponse, dnaResponse, linkedinResponse] = await Promise.allSettled([
@@ -162,6 +168,14 @@ export function LucanApp({ user }: { user: AppUser }) {
             </a>
           </div>
         </header>
+        {notice ? (
+          <div className={`status ${notice.kind === "error" ? "error" : "success"} notice`}>
+            <span>{notice.message}</span>
+            <button className="ghost-button" onClick={() => setNotice(null)} type="button">
+              Dismiss
+            </button>
+          </div>
+        ) : null}
 
         {view === "dashboard" && <Dashboard analytics={analytics} drafts={drafts} dna={dna} linkedinStatus={linkedinStatus} setView={setView} />}
         {view === "generator" && <Generator dna={dna} onSaved={refresh} />}
@@ -587,7 +601,7 @@ function ContentDna({
         <h2>LinkedIn account</h2>
         <LinkedInConnection status={linkedinStatus} />
         <div className="actions" style={{ marginTop: 14 }}>
-          {linkedinStatus?.configured && !linkedinStatus.connected ? (
+          {!linkedinStatus?.connected ? (
             <a className="primary-button as-link" href="/api/linkedin/connect">
               Connect LinkedIn
             </a>
@@ -645,7 +659,7 @@ function Settings({
         <h2>LinkedIn</h2>
         <LinkedInConnection status={linkedinStatus} />
         <div className="actions" style={{ marginTop: 14 }}>
-          {linkedinStatus?.configured && !linkedinStatus.connected ? (
+          {!linkedinStatus?.connected ? (
             <a className="primary-button as-link" href="/api/linkedin/connect">
               Connect LinkedIn
             </a>
@@ -664,7 +678,15 @@ function Settings({
 function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
   if (!status) return <div className="status">Checking LinkedIn status...</div>;
   if (!status.configured) {
-    return <div className="status">LinkedIn OAuth is not configured yet.</div>;
+    return (
+      <div className="status">
+        <strong>LinkedIn OAuth is not configured yet.</strong>
+        <p className="fine-print" style={{ marginTop: 6 }}>
+          Add LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET to .env.local, set the LinkedIn redirect URL to
+          http://localhost:3002/api/linkedin/callback, then restart the local server.
+        </p>
+      </div>
+    );
   }
   if (!status.account) {
     return <div className="status">No LinkedIn account connected.</div>;

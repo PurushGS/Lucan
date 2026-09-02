@@ -3,10 +3,15 @@ import { redirect } from "next/navigation";
 import { LucanApp } from "@/components/lucan-app";
 import { logtoConfig } from "@/app/logto";
 import { ensureUser } from "@/src/lib/db/users";
+import type { AppNotice } from "@/components/lucan-app";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ linkedin?: string; message?: string }>;
+}) {
   const context = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
 
   if (!context.isAuthenticated) {
@@ -14,7 +19,15 @@ export default async function Home() {
   }
 
   const user = await ensureUser(context);
-  return <LucanApp user={user} />;
+  const params = await searchParams;
+  const initialNotice: AppNotice | null = params?.message
+    ? {
+        kind: params.linkedin === "connected" ? "success" : "error",
+        message: params.message,
+      }
+    : null;
+
+  return <LucanApp initialNotice={initialNotice} user={user} />;
 }
 
 function Unauthenticated() {
