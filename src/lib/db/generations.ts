@@ -1,7 +1,6 @@
 import { randomUUID } from "crypto";
 import { db } from "./client";
 import { ensureSchema } from "./schema";
-import { getModel } from "@/src/lib/ai/openai";
 import type { GenerationResult, SourceType } from "@/src/types/lucan";
 
 export async function recordGeneration(input: {
@@ -25,7 +24,7 @@ export async function recordGeneration(input: {
       input.extractedContent,
       input.result.post,
       input.result.title,
-      getModel(),
+      process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || null,
     ],
   });
 

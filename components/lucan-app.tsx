@@ -80,7 +80,7 @@ export function LucanApp({ user }: { user: AppUser }) {
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+  }, [refresh, view]);
 
   const title = navItems.find((item) => item.id === view)?.label ?? "Lucan";
 

@@ -1,4 +1,4 @@
-import { getModel, getOpenAIClient } from "./openai";
+import { completeJson } from "./openai";
 import { parseJsonObject } from "./json";
 import { dnaPrompt, generationPrompt } from "./prompts";
 import type { ContentDnaProfile, GenerationResult, SourceType } from "@/src/types/lucan";
@@ -9,21 +9,11 @@ export async function generatePost(input: {
   sourceText: string;
   dna: ContentDnaProfile | null;
 }) {
-  const client = getOpenAIClient();
-  const response = await client.responses.create({
-    model: getModel(),
-    input: generationPrompt(input),
-  });
-
-  return parseJsonObject<GenerationResult>(response.output_text);
+  const response = await completeJson(generationPrompt(input));
+  return parseJsonObject<GenerationResult>(response);
 }
 
 export async function generateContentDna(posts: string) {
-  const client = getOpenAIClient();
-  const response = await client.responses.create({
-    model: getModel(),
-    input: dnaPrompt(posts),
-  });
-
-  return parseJsonObject<ContentDnaProfile>(response.output_text);
+  const response = await completeJson(dnaPrompt(posts));
+  return parseJsonObject<ContentDnaProfile>(response);
 }
