@@ -15,7 +15,16 @@ import {
   Youtube,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AppUser, ContentDnaProfile, ContentDnaRecord, Draft, LinkedInStatus, PostScore, SourceType } from "@/src/types/lucan";
+import type {
+  AppUser,
+  ContentDnaProfile,
+  ContentDnaRecord,
+  Draft,
+  LinkedInDashboardAnalytics,
+  LinkedInStatus,
+  PostScore,
+  SourceType,
+} from "@/src/types/lucan";
 
 type View = "dashboard" | "generator" | "drafts" | "analytics" | "dna" | "settings";
 
@@ -31,6 +40,7 @@ type AnalyticsResponse = {
   drafts: number;
   generations: number;
   hasDna: boolean;
+  linkedin: LinkedInDashboardAnalytics;
   sourceMix: Array<{ sourceType: string; count: number }>;
 };
 
@@ -177,13 +187,16 @@ function Dashboard({
   linkedinStatus: LinkedInStatus | null;
   setView: (view: View) => void;
 }) {
+  const linkedin = analytics?.linkedin;
+
   return (
     <>
       <div className="dashboard-grid">
         <Metric label="Drafts" value={analytics?.drafts ?? 0} />
         <Metric label="Generations" value={analytics?.generations ?? 0} />
         <Metric label="Content DNA" value={analytics?.hasDna ? "Ready" : "Pending"} />
-        <Metric label="Sources" value={analytics?.sourceMix.length ?? 0} />
+        <Metric label="LinkedIn posts" value={linkedin?.account?.postsImported ?? 0} />
+        <Metric label="Impressions" value={formatNumber(linkedin?.totals.impressions ?? 0)} />
       </div>
       <div className="workspace-grid">
         <section className="panel section">
@@ -420,16 +433,38 @@ function Drafts({ drafts }: { drafts: Draft[] }) {
 
 function Analytics({ analytics }: { analytics: AnalyticsResponse | null }) {
   const max = useMemo(() => Math.max(1, ...(analytics?.sourceMix.map((item) => item.count) ?? [1])), [analytics]);
+  const linkedin = analytics?.linkedin;
+  const engagement =
+    (linkedin?.totals.reactions ?? 0) + (linkedin?.totals.comments ?? 0) + (linkedin?.totals.reshares ?? 0);
 
   return (
     <div className="workspace-grid">
+      <section className="panel section analytics-wide">
+        <h2>LinkedIn analytics</h2>
+        <div className="dashboard-grid">
+          <Metric label="Posts imported" value={linkedin?.account?.postsImported ?? 0} />
+          <Metric label="Followers" value={formatOptionalNumber(linkedin?.followerCount)} />
+          <Metric label="Connections" value={formatOptionalNumber(linkedin?.connectionCount)} />
+          <Metric label="Engagement" value={formatNumber(engagement)} />
+        </div>
+        {!linkedin?.connected ? (
+          <div className="status" style={{ marginTop: 14 }}>Connect LinkedIn to import real posts and analytics.</div>
+        ) : !linkedin.posts.length ? (
+          <div className="status" style={{ marginTop: 14 }}>LinkedIn is connected. Run sync to import posts.</div>
+        ) : !linkedin.analyticsAvailable ? (
+          <div className="status" style={{ marginTop: 14 }}>
+            Posts are imported. Post analytics will appear after LinkedIn grants r_member_postAnalytics to this app.
+          </div>
+        ) : null}
+        {linkedin?.posts.length ? <LinkedInPostTable posts={linkedin.posts} /> : null}
+      </section>
       <section className="panel section">
         <h2>Workspace analytics</h2>
         <div className="dashboard-grid">
           <Metric label="Drafts" value={analytics?.drafts ?? 0} />
           <Metric label="Generated" value={analytics?.generations ?? 0} />
           <Metric label="DNA" value={analytics?.hasDna ? "Ready" : "Pending"} />
-          <Metric label="LinkedIn" value="Later" />
+          <Metric label="LinkedIn" value={linkedin?.connected ? "Connected" : "Pending"} />
         </div>
       </section>
       <section className="panel section">
@@ -446,6 +481,43 @@ function Analytics({ analytics }: { analytics: AnalyticsResponse | null }) {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function LinkedInPostTable({ posts }: { posts: NonNullable<AnalyticsResponse["linkedin"]>["posts"] }) {
+  return (
+    <div className="table-wrap">
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Post</th>
+            <th>Date</th>
+            <th>Impressions</th>
+            <th>Reach</th>
+            <th>Reactions</th>
+            <th>Comments</th>
+            <th>Reposts</th>
+            <th>Saves</th>
+            <th>Clicks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {posts.map((post) => (
+            <tr key={post.urn}>
+              <td>{shorten(post.commentary, 120)}</td>
+              <td>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : "-"}</td>
+              <td>{formatNumber(post.analytics.impressions)}</td>
+              <td>{formatNumber(post.analytics.membersReached)}</td>
+              <td>{formatNumber(post.analytics.reactions)}</td>
+              <td>{formatNumber(post.analytics.comments)}</td>
+              <td>{formatNumber(post.analytics.reshares)}</td>
+              <td>{formatNumber(post.analytics.saves)}</td>
+              <td>{formatNumber(post.analytics.linkClicks)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -476,7 +548,11 @@ function ContentDna({
       setError(payload.error?.message ?? "Content DNA failed.");
       setStatus("");
     } else {
-      setStatus("Content DNA saved");
+      setStatus(
+        typeof payload.analyticsError === "string"
+          ? `Content DNA saved. ${payload.analyticsError}`
+          : "Content DNA saved with LinkedIn analytics.",
+      );
       await onUpdated();
     }
     setBusy(false);
@@ -538,15 +614,22 @@ function Settings({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
 
   async function sync() {
     setBusy(true);
     setError("");
+    setStatus("");
     const response = await fetch("/api/linkedin/sync", { method: "POST" });
     const payload = await readPayload(response);
     if (!response.ok) {
       setError(payload.error?.message ?? "LinkedIn sync failed.");
     } else {
+      setStatus(
+        typeof payload.analyticsError === "string"
+          ? `Content DNA synced. ${payload.analyticsError}`
+          : "Content DNA and LinkedIn analytics synced.",
+      );
       await onUpdated();
     }
     setBusy(false);
@@ -571,6 +654,7 @@ function Settings({
             {busy ? "Syncing..." : "Sync Content DNA"}
           </button>
         </div>
+        {status && <div className="status" style={{ marginTop: 12 }}>{status}</div>}
         {error && <div className="status error" style={{ marginTop: 12 }}>{error}</div>}
       </section>
     </div>
@@ -784,4 +868,16 @@ async function readPayload(response: Response) {
   } catch {
     return { error: { message: text } };
   }
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US").format(value);
+}
+
+function formatOptionalNumber(value: number | null | undefined) {
+  return value === null || value === undefined ? "Not available" : formatNumber(value);
+}
+
+function shorten(value: string, maxLength: number) {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
 }

@@ -45,6 +45,37 @@ export type LinkedInAccount = {
   postsImported: number;
 };
 
+export type LinkedInPostAnalytics = {
+  impressions: number;
+  membersReached: number;
+  reactions: number;
+  comments: number;
+  reshares: number;
+  saves: number;
+  sends: number;
+  linkClicks: number;
+  followersGained: number;
+  profileViews: number;
+};
+
+export type LinkedInImportedPost = {
+  urn: string;
+  commentary: string;
+  publishedAt: string | null;
+  analytics: LinkedInPostAnalytics;
+};
+
+export type LinkedInDashboardAnalytics = {
+  connected: boolean;
+  account: LinkedInAccount | null;
+  followerCount: number | null;
+  connectionCount: number | null;
+  totals: LinkedInPostAnalytics;
+  posts: LinkedInImportedPost[];
+  analyticsAvailable: boolean;
+  analyticsError: string | null;
+};
+
 export type LinkedInStatus = {
   configured: boolean;
   connected: boolean;

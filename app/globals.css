@@ -245,7 +245,7 @@ button {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 14px;
 }
 
@@ -271,6 +271,10 @@ button {
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
   gap: 18px;
   margin-top: 18px;
+}
+
+.analytics-wide {
+  grid-column: 1 / -1;
 }
 
 .section {
@@ -454,6 +458,40 @@ select:focus {
   background: linear-gradient(180deg, var(--blue), var(--teal));
 }
 
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  background: #fbfdfd;
+  font-size: 14px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.data-table tr:last-child td {
+  border-bottom: 0;
+}
+
 .score-panel {
   margin-top: 16px;
 }
@@ -513,7 +551,6 @@ select:focus {
     margin-top: 18px;
   }
 
-  .dashboard-grid,
   .workspace-grid,
   .dna-grid,
   .score-grid {

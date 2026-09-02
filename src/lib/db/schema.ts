@@ -77,6 +77,31 @@ async function createSchema() {
         unique(account_id, linkedin_post_urn)
       )`,
       `create index if not exists linkedin_posts_user_created_idx on linkedin_posts(user_id, created_at desc)`,
+      `create table if not exists linkedin_post_analytics (
+        account_id text not null references linkedin_accounts(id) on delete cascade,
+        linkedin_post_urn text not null,
+        impressions integer not null default 0,
+        members_reached integer not null default 0,
+        reactions integer not null default 0,
+        comments integer not null default 0,
+        reshares integer not null default 0,
+        saves integer not null default 0,
+        sends integer not null default 0,
+        link_clicks integer not null default 0,
+        followers_gained integer not null default 0,
+        profile_views integer not null default 0,
+        raw_json text not null default '{}',
+        synced_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+        primary key(account_id, linkedin_post_urn)
+      )`,
+      `create table if not exists linkedin_profile_metrics (
+        account_id text primary key references linkedin_accounts(id) on delete cascade,
+        user_id text not null references users(id) on delete cascade,
+        follower_count integer,
+        connection_count integer,
+        raw_json text not null default '{}',
+        synced_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+      )`,
     ],
     "write",
   );
