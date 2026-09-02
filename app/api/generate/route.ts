@@ -20,6 +20,8 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const sourceType = sourceSchema.parse(formData.get("sourceType")) as SourceType;
     const input = String(formData.get("input") ?? "").trim();
+    const tone = optionalFormString(formData.get("tone"));
+    const instructions = optionalFormString(formData.get("instructions"));
 
     if (sourceType !== "pdf" && input.length < 3) {
       return jsonError("Add a topic or URL first.");
@@ -32,6 +34,8 @@ export async function POST(request: Request) {
       sourceValue: sourceType === "pdf" ? getPdfName(formData) : input,
       sourceText,
       dna,
+      tone,
+      instructions,
     });
     const generationId = await recordGeneration({
       userId: user.id,
@@ -66,4 +70,9 @@ async function resolveSourceText(sourceType: SourceType, input: string, formData
 function getPdfName(formData: FormData) {
   const file = formData.get("file");
   return file instanceof File ? file.name : "Uploaded PDF";
+}
+
+function optionalFormString(value: FormDataEntryValue | null) {
+  const text = typeof value === "string" ? value.trim() : "";
+  return text || null;
 }

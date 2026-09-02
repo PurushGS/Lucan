@@ -45,3 +45,22 @@ export async function createDraft(input: {
 
   return id;
 }
+
+export async function updateDraft(input: {
+  id: string;
+  userId: string;
+  title: string;
+  content: string;
+}) {
+  await ensureSchema();
+  const result = await db.execute({
+    sql: `update drafts
+      set title = ?, content = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      where id = ? and user_id = ?`,
+    args: [input.title, input.content, input.id, input.userId],
+  });
+
+  if (result.rowsAffected === 0) {
+    throw new Error("Draft not found.");
+  }
+}

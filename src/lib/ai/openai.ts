@@ -10,7 +10,7 @@ export function getOpenAIClient() {
       apiKey: process.env.OPENROUTER_API_KEY,
       baseURL: "https://openrouter.ai/api/v1",
       defaultHeaders: {
-        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3002",
         "X-OpenRouter-Title": "Lucan",
       },
     });
@@ -26,7 +26,7 @@ export function getOpenAIClient() {
 }
 
 export function getModel() {
-  return process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || "openai/gpt-4.1-mini";
+  return process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || "openai/gpt-4.1-nano";
 }
 
 export async function completeJson(prompt: string) {

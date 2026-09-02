@@ -7,7 +7,10 @@ export async function getWorkspaceAnalytics(userId: string) {
   const [drafts, generations, dna, mix] = await Promise.all([
     db.execute({ sql: "select count(*) as count from drafts where user_id = ?", args: [userId] }),
     db.execute({ sql: "select count(*) as count from generations where user_id = ?", args: [userId] }),
-    db.execute({ sql: "select count(*) as count from content_dna where user_id = ?", args: [userId] }),
+    db.execute({
+      sql: "select count(*) as count from content_dna where user_id = ? and analysis_source = 'linkedin'",
+      args: [userId],
+    }),
     db.execute({
       sql: `select source_type, count(*) as count
         from generations

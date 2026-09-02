@@ -29,8 +29,51 @@ export type ContentDnaProfile = {
   avoid: string[];
 };
 
+export type ContentDnaRecord = {
+  profile: ContentDnaProfile;
+  postsAnalyzed: number;
+  medianWords: number;
+  updatedAt: string;
+};
+
+export type LinkedInAccount = {
+  id: string;
+  displayName: string | null;
+  picture: string | null;
+  connectedAt: string;
+  lastSyncedAt: string | null;
+  postsImported: number;
+};
+
+export type LinkedInStatus = {
+  configured: boolean;
+  connected: boolean;
+  account: LinkedInAccount | null;
+  dna: ContentDnaRecord | null;
+};
+
 export type GenerationResult = {
   title: string;
   post: string;
   notes: string[];
+};
+
+export type PostScoreFinding = {
+  severity: "low" | "medium" | "high";
+  line: string;
+  reason: string;
+  suggestion: string;
+};
+
+export type PostScore = {
+  performanceScore: number;
+  authenticityScore: number;
+  slopRisk: "low" | "medium" | "high";
+  summary: string;
+  voiceCheck: string[];
+  criteria: Array<{
+    name: string;
+    feedback: string;
+  }>;
+  findings: PostScoreFinding[];
 };

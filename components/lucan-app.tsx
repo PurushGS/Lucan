@@ -2,6 +2,7 @@
 
 import {
   BarChart3,
+  CheckCircle2,
   Database,
   FileText,
   LayoutDashboard,
@@ -14,7 +15,7 @@ import {
   Youtube,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AppUser, ContentDnaProfile, Draft, SourceType } from "@/src/types/lucan";
+import type { AppUser, ContentDnaProfile, ContentDnaRecord, Draft, LinkedInStatus, PostScore, SourceType } from "@/src/types/lucan";
 
 type View = "dashboard" | "generator" | "drafts" | "analytics" | "dna" | "settings";
 
@@ -49,32 +50,54 @@ const sourceOptions: Array<{ id: SourceType; label: string; icon: React.Componen
   { id: "youtube", label: "YouTube", icon: Youtube },
 ];
 
+const toneOptions = [
+  "Professional",
+  "Candid",
+  "Casual",
+  "Convincing",
+  "Engaging",
+  "Informative",
+  "Encouraging",
+  "Passionate",
+];
+
 export function LucanApp({ user }: { user: AppUser }) {
   const [view, setView] = useState<View>("dashboard");
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [dna, setDna] = useState<ContentDnaProfile | null>(null);
+  const [dnaRecord, setDnaRecord] = useState<ContentDnaRecord | null>(null);
+  const [linkedinStatus, setLinkedInStatus] = useState<LinkedInStatus | null>(null);
 
   const refresh = useCallback(async () => {
-    const [draftResponse, analyticsResponse, dnaResponse] = await Promise.all([
+    const [draftResponse, analyticsResponse, dnaResponse, linkedinResponse] = await Promise.allSettled([
       fetch("/api/drafts"),
       fetch("/api/analytics"),
       fetch("/api/dna"),
+      fetch("/api/linkedin/status"),
     ]);
 
-    if (draftResponse.ok) {
-      const data = (await draftResponse.json()) as { drafts: Draft[] };
+    if (draftResponse.status === "fulfilled" && draftResponse.value.ok) {
+      const data = (await draftResponse.value.json()) as { drafts: Draft[] };
       setDrafts(data.drafts);
     }
 
-    if (analyticsResponse.ok) {
-      const data = (await analyticsResponse.json()) as { analytics: AnalyticsResponse };
+    if (analyticsResponse.status === "fulfilled" && analyticsResponse.value.ok) {
+      const data = (await analyticsResponse.value.json()) as { analytics: AnalyticsResponse };
       setAnalytics(data.analytics);
     }
 
-    if (dnaResponse.ok) {
-      const data = (await dnaResponse.json()) as { profile: ContentDnaProfile | null };
+    if (dnaResponse.status === "fulfilled" && dnaResponse.value.ok) {
+      const data = (await dnaResponse.value.json()) as { profile: ContentDnaProfile | null; dna: ContentDnaRecord | null };
       setDna(data.profile);
+      setDnaRecord(data.dna);
+    }
+
+    if (linkedinResponse.status === "fulfilled" && linkedinResponse.value.ok) {
+      const data = (await linkedinResponse.value.json()) as { status: LinkedInStatus };
+      setLinkedInStatus(data.status);
+    } else {
+      setLinkedInStatus({ configured: false, connected: false, account: null, dna: null });
     }
   }, []);
 
@@ -130,12 +153,12 @@ export function LucanApp({ user }: { user: AppUser }) {
           </div>
         </header>
 
-        {view === "dashboard" && <Dashboard analytics={analytics} drafts={drafts} dna={dna} setView={setView} />}
+        {view === "dashboard" && <Dashboard analytics={analytics} drafts={drafts} dna={dna} linkedinStatus={linkedinStatus} setView={setView} />}
         {view === "generator" && <Generator dna={dna} onSaved={refresh} />}
         {view === "drafts" && <Drafts drafts={drafts} />}
         {view === "analytics" && <Analytics analytics={analytics} />}
-        {view === "dna" && <ContentDna dna={dna} onUpdated={refresh} />}
-        {view === "settings" && <Settings user={user} />}
+        {view === "dna" && <ContentDna dna={dna} dnaRecord={dnaRecord} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
+        {view === "settings" && <Settings user={user} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
       </section>
     </main>
   );
@@ -145,11 +168,13 @@ function Dashboard({
   analytics,
   drafts,
   dna,
+  linkedinStatus,
   setView,
 }: {
   analytics: AnalyticsResponse | null;
   drafts: Draft[];
   dna: ContentDnaProfile | null;
+  linkedinStatus: LinkedInStatus | null;
   setView: (view: View) => void;
 }) {
   return (
@@ -172,9 +197,13 @@ function Dashboard({
               Generate post
             </button>
             <button className="secondary-button" onClick={() => setView("dna")} type="button">
-              {dna ? "View Content DNA" : "Build Content DNA"}
+              {dna ? "View Content DNA" : "Connect LinkedIn"}
             </button>
-            <p className="fine-print">LinkedIn publishing and profile analytics will appear after the LinkedIn OAuth slice is connected.</p>
+            <p className="fine-print">
+              {linkedinStatus?.connected
+                ? "Sync LinkedIn posts to keep Content DNA current."
+                : "Content DNA starts after the user connects a LinkedIn account."}
+            </p>
           </div>
         </section>
       </div>
@@ -185,11 +214,16 @@ function Dashboard({
 function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: () => Promise<void> }) {
   const [sourceType, setSourceType] = useState<SourceType>("topic");
   const [input, setInput] = useState("");
+  const [tone, setTone] = useState("");
+  const [instructions, setInstructions] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<GenerateResponse | null>(null);
+  const [draftContent, setDraftContent] = useState("");
+  const [score, setScore] = useState<PostScore | null>(null);
   const [status, setStatus] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [scoring, setScoring] = useState(false);
 
   const inputLabel = sourceType === "topic" ? "Topic" : sourceType === "youtube" ? "YouTube URL" : "Article URL";
 
@@ -202,6 +236,8 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     const body = new FormData();
     body.set("sourceType", sourceType);
     body.set("input", input);
+    body.set("tone", tone);
+    body.set("instructions", instructions);
     if (file) body.set("file", file);
 
     const response = await fetch("/api/generate", { method: "POST", body });
@@ -215,12 +251,14 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     }
 
     setResult(payload as GenerateResponse);
+    setDraftContent((payload as GenerateResponse).post);
+    setScore(null);
     setStatus("Generated");
     setBusy(false);
   }
 
   async function saveDraft() {
-    if (!result) return;
+    if (!result || !draftContent.trim()) return;
     setBusy(true);
     setError("");
 
@@ -231,7 +269,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
         sourceType,
         sourceValue: sourceType === "pdf" ? file?.name ?? "Uploaded PDF" : input,
         title: result.title,
-        content: result.post,
+        content: draftContent,
       }),
     });
     const payload = await readPayload(response);
@@ -243,6 +281,24 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
       await onSaved();
     }
     setBusy(false);
+  }
+
+  async function checkScore() {
+    if (!draftContent.trim()) return;
+    setScoring(true);
+    setError("");
+    const response = await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post: draftContent }),
+    });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "Score check failed.");
+    } else {
+      setScore((payload as { score: PostScore }).score);
+    }
+    setScoring(false);
   }
 
   return (
@@ -282,11 +338,33 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
             </label>
           )}
 
+          <label className="field">
+            <span>Tone of voice</span>
+            <select value={tone} onChange={(event) => setTone(event.target.value)}>
+              <option value="">Auto</option>
+              {toneOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="field">
+            <span>Instructions</span>
+            <textarea
+              onChange={(event) => setInstructions(event.target.value)}
+              placeholder="Focus on a specific angle, audience, or part of the source."
+              rows={3}
+              value={instructions}
+            />
+          </label>
+
           <div className="actions">
             <button className="primary-button" disabled={busy} onClick={generate} type="button">
               {busy ? "Working..." : "Generate"}
             </button>
-            <span className="fine-print">{dna ? "DNA active" : "DNA not saved yet"}</span>
+            <span className="fine-print">{dna ? "LinkedIn DNA active" : "Connect LinkedIn to activate DNA"}</span>
           </div>
           {status && <div className="status">{status}</div>}
           {error && <div className="status error">{error}</div>}
@@ -295,24 +373,48 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
 
       <section className="panel section result-box">
         <h2>Draft</h2>
-        <div className="post-output">{result?.post ?? "Your generated post will appear here."}</div>
+        {result ? (
+          <label className="field">
+            <span>{draftContent.length} characters</span>
+            <textarea className="post-editor" onChange={(event) => setDraftContent(event.target.value)} rows={16} value={draftContent} />
+          </label>
+        ) : (
+          <div className="post-output">Your generated post will appear here.</div>
+        )}
         {result?.notes?.length ? <p className="fine-print" style={{ marginTop: 12 }}>{result.notes.join(" ")}</p> : null}
         <div className="actions" style={{ marginTop: 14 }}>
           <button className="secondary-button" disabled={!result || busy} onClick={saveDraft} type="button">
             <Save size={16} /> Save draft
           </button>
+          <button className="secondary-button" disabled={!draftContent || scoring} onClick={checkScore} type="button">
+            <CheckCircle2 size={16} /> {scoring ? "Checking..." : "Check score"}
+          </button>
         </div>
+        {score ? <ScorePanel score={score} /> : null}
       </section>
     </div>
   );
 }
 
 function Drafts({ drafts }: { drafts: Draft[] }) {
+  const [selectedId, setSelectedId] = useState<string | null>(drafts[0]?.id ?? null);
+  const selected = drafts.find((draft) => draft.id === selectedId) ?? drafts[0] ?? null;
+
+  useEffect(() => {
+    if (!selectedId && drafts[0]) setSelectedId(drafts[0].id);
+  }, [drafts, selectedId]);
+
   return (
-    <section className="panel section">
-      <h2>Draft board</h2>
-      <DraftList drafts={drafts} empty="No drafts yet." />
-    </section>
+    <div className="workspace-grid">
+      <section className="panel section">
+        <h2>Draft board</h2>
+        <DraftList drafts={drafts} empty="No drafts yet." onSelect={setSelectedId} selectedId={selected?.id ?? null} />
+      </section>
+      <section className="panel section">
+        <h2>Editor</h2>
+        {selected ? <DraftEditor draft={selected} /> : <div className="status">Select or create a draft first.</div>}
+      </section>
+    </div>
   );
 }
 
@@ -348,21 +450,26 @@ function Analytics({ analytics }: { analytics: AnalyticsResponse | null }) {
   );
 }
 
-function ContentDna({ dna, onUpdated }: { dna: ContentDnaProfile | null; onUpdated: () => Promise<void> }) {
-  const [posts, setPosts] = useState("");
+function ContentDna({
+  dna,
+  dnaRecord,
+  linkedinStatus,
+  onUpdated,
+}: {
+  dna: ContentDnaProfile | null;
+  dnaRecord: ContentDnaRecord | null;
+  linkedinStatus: LinkedInStatus | null;
+  onUpdated: () => Promise<void>;
+}) {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function buildDna() {
+  async function syncDna() {
     setBusy(true);
     setError("");
-    setStatus("Analyzing...");
-    const response = await fetch("/api/dna", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ posts }),
-    });
+    setStatus("Importing LinkedIn posts...");
+    const response = await fetch("/api/linkedin/sync", { method: "POST" });
     const payload = await readPayload(response);
 
     if (!response.ok) {
@@ -379,6 +486,14 @@ function ContentDna({ dna, onUpdated }: { dna: ContentDnaProfile | null; onUpdat
     <div className="workspace-grid">
       <section className="panel section">
         <h2>Content DNA</h2>
+        {dnaRecord ? (
+          <div className="dashboard-grid dna-stats">
+            <Metric label="Posts analyzed" value={dnaRecord.postsAnalyzed} />
+            <Metric label="Median words" value={dnaRecord.medianWords} />
+            <Metric label="Topics" value={dna?.contentPillars.length ?? 0} />
+            <Metric label="Status" value="Ready" />
+          </div>
+        ) : null}
         {dna ? (
           <div className="dna-grid">
             <DnaCard title="Identity Core" text={dna.identityCore} />
@@ -388,19 +503,23 @@ function ContentDna({ dna, onUpdated }: { dna: ContentDnaProfile | null; onUpdat
             <DnaCard title="Audience Field" text={dna.audienceField} />
           </div>
         ) : (
-          <div className="status">No Content DNA saved.</div>
+          <div className="status">No LinkedIn-based Content DNA yet.</div>
         )}
       </section>
 
       <section className="panel section">
-        <h2>Build from posts</h2>
-        <label className="field">
-          <span>LinkedIn post history</span>
-          <textarea onChange={(event) => setPosts(event.target.value)} rows={12} value={posts} />
-        </label>
-        <button className="primary-button" disabled={busy} onClick={buildDna} type="button">
-          {busy ? "Working..." : "Generate DNA"}
-        </button>
+        <h2>LinkedIn account</h2>
+        <LinkedInConnection status={linkedinStatus} />
+        <div className="actions" style={{ marginTop: 14 }}>
+          {linkedinStatus?.configured && !linkedinStatus.connected ? (
+            <a className="primary-button as-link" href="/api/linkedin/connect">
+              Connect LinkedIn
+            </a>
+          ) : null}
+          <button className="secondary-button" disabled={!linkedinStatus?.connected || busy} onClick={syncDna} type="button">
+            {busy ? "Syncing..." : "Sync posts and rebuild DNA"}
+          </button>
+        </div>
         {status && <div className="status" style={{ marginTop: 12 }}>{status}</div>}
         {error && <div className="status error" style={{ marginTop: 12 }}>{error}</div>}
       </section>
@@ -408,7 +527,31 @@ function ContentDna({ dna, onUpdated }: { dna: ContentDnaProfile | null; onUpdat
   );
 }
 
-function Settings({ user }: { user: AppUser }) {
+function Settings({
+  user,
+  linkedinStatus,
+  onUpdated,
+}: {
+  user: AppUser;
+  linkedinStatus: LinkedInStatus | null;
+  onUpdated: () => Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function sync() {
+    setBusy(true);
+    setError("");
+    const response = await fetch("/api/linkedin/sync", { method: "POST" });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "LinkedIn sync failed.");
+    } else {
+      await onUpdated();
+    }
+    setBusy(false);
+  }
+
   return (
     <div className="workspace-grid">
       <section className="panel section">
@@ -417,11 +560,39 @@ function Settings({ user }: { user: AppUser }) {
       </section>
       <section className="panel section">
         <h2>LinkedIn</h2>
-        <div className="status">Not connected</div>
-        <p className="fine-print" style={{ marginTop: 12 }}>
-          OAuth posting and LinkedIn analytics are queued for the next integration slice.
-        </p>
+        <LinkedInConnection status={linkedinStatus} />
+        <div className="actions" style={{ marginTop: 14 }}>
+          {linkedinStatus?.configured && !linkedinStatus.connected ? (
+            <a className="primary-button as-link" href="/api/linkedin/connect">
+              Connect LinkedIn
+            </a>
+          ) : null}
+          <button className="secondary-button" disabled={!linkedinStatus?.connected || busy} onClick={sync} type="button">
+            {busy ? "Syncing..." : "Sync Content DNA"}
+          </button>
+        </div>
+        {error && <div className="status error" style={{ marginTop: 12 }}>{error}</div>}
       </section>
+    </div>
+  );
+}
+
+function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
+  if (!status) return <div className="status">Checking LinkedIn status...</div>;
+  if (!status.configured) {
+    return <div className="status">LinkedIn OAuth is not configured yet.</div>;
+  }
+  if (!status.account) {
+    return <div className="status">No LinkedIn account connected.</div>;
+  }
+
+  return (
+    <div className="status">
+      <strong>{status.account.displayName || "LinkedIn account"}</strong>
+      <p className="fine-print" style={{ marginTop: 6 }}>
+        Imported posts: {status.account.postsImported}
+        {status.account.lastSyncedAt ? ` - Last synced ${new Date(status.account.lastSyncedAt).toLocaleString()}` : ""}
+      </p>
     </div>
   );
 }
@@ -444,13 +615,155 @@ function DnaCard({ title, text }: { title: string; text: string }) {
   );
 }
 
-function DraftList({ drafts, empty }: { drafts: Draft[]; empty: string }) {
+function DraftEditor({ draft }: { draft: Draft }) {
+  const [title, setTitle] = useState(draft.title);
+  const [content, setContent] = useState(draft.content);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [scoring, setScoring] = useState(false);
+  const [score, setScore] = useState<PostScore | null>(null);
+
+  useEffect(() => {
+    setTitle(draft.title);
+    setContent(draft.content);
+    setStatus("");
+    setError("");
+    setScore(null);
+  }, [draft]);
+
+  async function save() {
+    setBusy(true);
+    setError("");
+    const response = await fetch(`/api/drafts/${draft.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, content }),
+    });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "Draft update failed.");
+    } else {
+      setStatus("Draft saved");
+    }
+    setBusy(false);
+  }
+
+  async function checkScore() {
+    setScoring(true);
+    setError("");
+    const response = await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post: content }),
+    });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "Score check failed.");
+    } else {
+      setScore((payload as { score: PostScore }).score);
+    }
+    setScoring(false);
+  }
+
+  return (
+    <div className="input-grid">
+      <label className="field">
+        <span>Title</span>
+        <input onChange={(event) => setTitle(event.target.value)} type="text" value={title} />
+      </label>
+      <label className="field">
+        <span>{content.length} characters</span>
+        <textarea className="post-editor" onChange={(event) => setContent(event.target.value)} rows={18} value={content} />
+      </label>
+      <div className="actions">
+        <button className="primary-button" disabled={busy} onClick={save} type="button">
+          {busy ? "Saving..." : "Save as draft"}
+        </button>
+        <button className="secondary-button" disabled={scoring || content.length < 40} onClick={checkScore} type="button">
+          <CheckCircle2 size={16} /> {scoring ? "Checking..." : "Check score"}
+        </button>
+      </div>
+      {status && <div className="status">{status}</div>}
+      {error && <div className="status error">{error}</div>}
+      {score ? <ScorePanel score={score} /> : null}
+    </div>
+  );
+}
+
+function ScorePanel({ score }: { score: PostScore }) {
+  return (
+    <section className="score-panel">
+      <div className="dashboard-grid">
+        <Metric label="Performance" value={`${score.performanceScore}/10`} />
+        <Metric label="Authenticity" value={`${score.authenticityScore}/10`} />
+        <Metric label="AI-slop risk" value={score.slopRisk} />
+        <Metric label="Flags" value={score.findings.length} />
+      </div>
+      <p className="status" style={{ marginTop: 12 }}>{score.summary}</p>
+      <div className="score-grid">
+        <div>
+          <h3>Voice check</h3>
+          <ul className="plain-list">
+            {score.voiceCheck.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3>Criteria</h3>
+          <ul className="plain-list">
+            {score.criteria.map((item) => (
+              <li key={item.name}>
+                <strong>{item.name}</strong>: {item.feedback}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      {score.findings.length ? (
+        <div className="findings-list">
+          <h3>AI-slop fixes</h3>
+          {score.findings.map((finding) => (
+            <article className="finding-card" key={`${finding.line}-${finding.reason}`}>
+              <strong>{finding.severity.toUpperCase()}</strong>
+              <p>{finding.reason}</p>
+              <blockquote>{finding.line}</blockquote>
+              <p className="fine-print">{finding.suggestion}</p>
+            </article>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function DraftList({
+  drafts,
+  empty,
+  onSelect,
+  selectedId,
+}: {
+  drafts: Draft[];
+  empty: string;
+  onSelect?: (id: string) => void;
+  selectedId?: string | null;
+}) {
   if (!drafts.length) return <div className="status">{empty}</div>;
 
   return (
     <div className="draft-list">
       {drafts.map((draft) => (
-        <article className="draft-card" key={draft.id}>
+        <article
+          className={`draft-card ${selectedId === draft.id ? "active" : ""}`}
+          key={draft.id}
+          onClick={() => onSelect?.(draft.id)}
+          onKeyDown={(event) => {
+            if (onSelect && (event.key === "Enter" || event.key === " ")) onSelect(draft.id);
+          }}
+          role={onSelect ? "button" : undefined}
+          tabIndex={onSelect ? 0 : undefined}
+        >
           <header>
             <span>{draft.title}</span>
             <span>{draft.sourceType}</span>

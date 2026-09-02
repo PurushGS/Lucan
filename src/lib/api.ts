@@ -11,7 +11,12 @@ export function handleRouteError(error: unknown) {
     return error;
   }
 
-  if (error instanceof Error && error.message.includes("OPENAI_API_KEY")) {
+  if (
+    error instanceof Error &&
+    (error.message.includes("OPENAI_API_KEY") ||
+      error.message.includes("OPENROUTER_API_KEY") ||
+      error.message.includes("LinkedIn OAuth is not configured"))
+  ) {
     return jsonError(error.message, 503, "SETUP_REQUIRED");
   }
 

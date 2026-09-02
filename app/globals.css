@@ -118,6 +118,20 @@ button {
   font-weight: 700;
 }
 
+.primary-button.as-link,
+.secondary-button.as-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .ghost-button,
 .icon-button {
   background: #f0f6f7;
@@ -218,6 +232,10 @@ button {
   flex-wrap: wrap;
 }
 
+.actions .primary-button {
+  margin-top: 0;
+}
+
 .panel {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -304,7 +322,8 @@ button {
 
 textarea,
 input[type="url"],
-input[type="text"] {
+input[type="text"],
+select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -315,9 +334,15 @@ input[type="text"] {
 }
 
 textarea:focus,
-input:focus {
+input:focus,
+select:focus {
   outline: 3px solid rgba(3, 148, 135, 0.16);
   border-color: var(--teal);
+}
+
+.post-editor {
+  min-height: 320px;
+  line-height: 1.55;
 }
 
 .result-box {
@@ -360,6 +385,12 @@ input:focus {
   background: #fbfdfd;
 }
 
+.draft-card.active,
+.draft-card:hover {
+  border-color: rgba(3, 148, 135, 0.55);
+  background: #f2fbfa;
+}
+
 .draft-card header {
   display: flex;
   justify-content: space-between;
@@ -380,6 +411,10 @@ input:focus {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
+}
+
+.dna-stats {
+  margin-bottom: 14px;
 }
 
 .dna-card {
@@ -419,6 +454,44 @@ input:focus {
   background: linear-gradient(180deg, var(--blue), var(--teal));
 }
 
+.score-panel {
+  margin-top: 16px;
+}
+
+.score-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.plain-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.findings-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.finding-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfd;
+}
+
+.finding-card blockquote {
+  margin: 10px 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--line);
+  color: var(--ink);
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -442,7 +515,8 @@ input:focus {
 
   .dashboard-grid,
   .workspace-grid,
-  .dna-grid {
+  .dna-grid,
+  .score-grid {
     grid-template-columns: 1fr;
   }
 }
