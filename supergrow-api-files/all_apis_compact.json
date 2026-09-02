@@ -1,0 +1,1699 @@
+{
+  "generated_at": "2026-09-02T06:39:14.147Z",
+  "base_url": "https://api.supergrow.ai/api/v1",
+  "shared_headers": {
+    "Authorization": "Bearer <ACCESS_TOKEN>",
+    "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+    "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+    "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+    "OrgID": "<ORG_ID_IF_PRESENT>",
+    "Timezone": "Asia/Kolkata",
+    "Supergrow-x-headers": "<base64 client metadata>"
+  },
+  "endpoints": [
+    {
+      "name": "Dashboard cards",
+      "modules": [
+        "Dashboard"
+      ],
+      "method": "GET",
+      "path": "/dashboard/cards",
+      "file": "apis/get__dashboard_cards.md",
+      "purpose": "Hydrates the top-level dashboard cards, usually totals and recent publishing/account metrics.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "cards": [
+          {
+            "type": "scheduled_posts",
+            "title": "Scheduled posts",
+            "value": 8,
+            "delta": {
+              "value": 2,
+              "direction": "up"
+            }
+          },
+          {
+            "type": "published_posts",
+            "title": "Published posts",
+            "value": 21,
+            "delta": {
+              "value": 12,
+              "direction": "up"
+            }
+          },
+          {
+            "type": "draft_posts",
+            "title": "Drafts",
+            "value": 14
+          },
+          {
+            "type": "engagement",
+            "title": "Engagement",
+            "value": 538,
+            "delta": {
+              "value": 18.4,
+              "direction": "up"
+            }
+          }
+        ],
+        "upcoming_posts": [
+          {
+            "id": "post_123",
+            "text": "Short preview...",
+            "scheduled_at": "2026-09-03T09:30:00Z",
+            "status": "scheduled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Current user",
+      "modules": [
+        "Dashboard",
+        "Settings",
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/users/me",
+      "file": "apis/get__users_me.md",
+      "purpose": "Loads signed-in user identity, billing/account flags, and default workspace context.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "id": "user_123",
+        "email": "founder@example.com",
+        "name": "Purush",
+        "onboarding_completed": true,
+        "current_workspace_id": "47b4efd3-8000-46a5-9630-14ab228b017f",
+        "plan": {
+          "name": "pro",
+          "status": "active"
+        }
+      }
+    },
+    {
+      "name": "User info profile",
+      "modules": [
+        "Settings",
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/user_infos",
+      "file": "apis/get__user_infos.md",
+      "purpose": "Fetches onboarding/profile metadata used by personalization and account settings.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "id": "user_info_123",
+        "source_of_discovery": "google",
+        "linked_in_profile_url": "https://www.linkedin.com/in/example/",
+        "user_type": "founder",
+        "onboarding_completed": true
+      }
+    },
+    {
+      "name": "Get user settings",
+      "modules": [
+        "Settings",
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/user_settings",
+      "file": "apis/get__user_settings.md",
+      "purpose": "Reads user-level preferences such as timezone, writing settings, notification defaults, and UI preferences.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "id": "user_setting_123",
+        "timezone": "Asia/Kolkata",
+        "default_linked_in_account_id": "s_X8epv5b1",
+        "content_writing_style_id": "style_123",
+        "notifications_enabled": true,
+        "ai_preferences": {
+          "tone": "practical",
+          "audience": "founders"
+        }
+      }
+    },
+    {
+      "name": "Create user settings",
+      "modules": [
+        "Settings"
+      ],
+      "method": "POST",
+      "path": "/user_settings",
+      "file": "apis/post__user_settings.md",
+      "purpose": "Creates a user settings record when one does not already exist.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "timezone": "Asia/Kolkata",
+          "content_writing_style_id": "style_123",
+          "notifications_enabled": true,
+          "ai_preferences": {
+            "tone": "practical",
+            "audience": "founders"
+          }
+        }
+      },
+      "response_shape_mock": {
+        "id": "user_setting_123",
+        "timezone": "Asia/Kolkata",
+        "notifications_enabled": true
+      }
+    },
+    {
+      "name": "Update user settings",
+      "modules": [
+        "Settings"
+      ],
+      "method": "PUT",
+      "path": "/user_settings/:id",
+      "file": "apis/put__user_settings_by_id.md",
+      "purpose": "Updates an existing user settings record.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "id": "user_setting_123"
+        },
+        "body": {
+          "timezone": "Asia/Kolkata",
+          "default_linked_in_account_id": "s_X8epv5b1",
+          "notifications_enabled": false
+        }
+      },
+      "response_shape_mock": {
+        "id": "user_setting_123",
+        "timezone": "Asia/Kolkata",
+        "notifications_enabled": false
+      }
+    },
+    {
+      "name": "List workspaces",
+      "modules": [
+        "Settings",
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/workspaces",
+      "file": "apis/get__workspaces.md",
+      "purpose": "Lists workspaces available to the signed-in user.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "workspaces": [
+          {
+            "id": "47b4efd3-8000-46a5-9630-14ab228b017f",
+            "name": "Main workspace",
+            "role": "owner",
+            "org_id": "org_123"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Create workspace",
+      "modules": [
+        "Settings"
+      ],
+      "method": "POST",
+      "path": "/workspaces",
+      "file": "apis/post__workspaces.md",
+      "purpose": "Creates a new workspace.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "name": "New brand workspace"
+        }
+      },
+      "response_shape_mock": {
+        "id": "workspace_456",
+        "name": "New brand workspace",
+        "role": "owner"
+      }
+    },
+    {
+      "name": "Update workspace",
+      "modules": [
+        "Settings"
+      ],
+      "method": "PUT",
+      "path": "/workspaces/:id",
+      "file": "apis/put__workspaces_by_id.md",
+      "purpose": "Renames or updates workspace metadata.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "id": "47b4efd3-8000-46a5-9630-14ab228b017f"
+        },
+        "body": {
+          "name": "Main workspace"
+        }
+      },
+      "response_shape_mock": {
+        "id": "47b4efd3-8000-46a5-9630-14ab228b017f",
+        "name": "Main workspace"
+      }
+    },
+    {
+      "name": "Delete workspace",
+      "modules": [
+        "Settings"
+      ],
+      "method": "DELETE",
+      "path": "/workspaces/:id",
+      "file": "apis/delete__workspaces_by_id.md",
+      "purpose": "Deletes a workspace, with name confirmation in the request body.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "id": "workspace_456"
+        },
+        "body": {
+          "name": "New brand workspace"
+        }
+      },
+      "response_shape_mock": {
+        "success": true
+      }
+    },
+    {
+      "name": "Workspace plan",
+      "modules": [
+        "Settings"
+      ],
+      "method": "GET",
+      "path": "/workspaces/:id/plan",
+      "file": "apis/get__workspaces_by_id_plan.md",
+      "purpose": "Fetches subscription/plan limits for a workspace.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "id": "47b4efd3-8000-46a5-9630-14ab228b017f"
+        }
+      },
+      "response_shape_mock": {
+        "plan": "pro",
+        "limits": {
+          "linkedin_accounts": 3,
+          "scheduled_posts": 100,
+          "ai_generations_per_month": 500
+        },
+        "usage": {
+          "linkedin_accounts": 1,
+          "scheduled_posts": 8,
+          "ai_generations_this_month": 74
+        }
+      }
+    },
+    {
+      "name": "Check LinkedIn integration",
+      "modules": [
+        "Settings",
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/linkedin/integrations/check",
+      "file": "apis/get__linkedin_integrations_check.md",
+      "purpose": "Checks whether the current workspace has a valid LinkedIn connection.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "connected": true,
+        "requires_reconnect": false,
+        "linked_in_account_id": "s_X8epv5b1"
+      }
+    },
+    {
+      "name": "List LinkedIn integrations",
+      "modules": [
+        "Settings",
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/linkedin/integrations",
+      "file": "apis/get__linkedin_integrations.md",
+      "purpose": "Lists LinkedIn personal profiles connected to the workspace.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "integrations": [
+          {
+            "id": "li_int_123",
+            "user_id": "s_X8epv5b1",
+            "name": "Purush",
+            "profile_url": "https://www.linkedin.com/in/example/",
+            "status": "connected",
+            "expires_at": "2026-10-01T00:00:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Create LinkedIn integration",
+      "modules": [
+        "Settings"
+      ],
+      "method": "POST",
+      "path": "/linkedin/integrations",
+      "file": "apis/post__linkedin_integrations.md",
+      "purpose": "Completes LinkedIn OAuth connection.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "code": "<oauth_code>",
+          "redirect_uri": "https://app.supergrow.ai/settings/integrations/linkedin/callback",
+          "client_id": "<linkedin_client_id>"
+        }
+      },
+      "response_shape_mock": {
+        "connected": true,
+        "linked_in_account_id": "s_X8epv5b1"
+      }
+    },
+    {
+      "name": "Delete LinkedIn integration",
+      "modules": [
+        "Settings"
+      ],
+      "method": "DELETE",
+      "path": "/linkedin/integrations",
+      "file": "apis/delete__linkedin_integrations.md",
+      "purpose": "Disconnects a LinkedIn profile from the workspace.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "linked_in_account_id": "s_X8epv5b1"
+        }
+      },
+      "response_shape_mock": {
+        "success": true
+      }
+    },
+    {
+      "name": "List connected company pages",
+      "modules": [
+        "Settings",
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/linked_in_company_pages",
+      "file": "apis/get__linked_in_company_pages.md",
+      "purpose": "Lists LinkedIn company pages connected to the current workspace.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "pages": [
+          {
+            "id": "page_123",
+            "page_id": "urn:li:organization:123456",
+            "name": "Example Company",
+            "logo_url": "https://media.licdn.com/...",
+            "linked_in_account_id": "s_X8epv5b1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Connect company page",
+      "modules": [
+        "Settings"
+      ],
+      "method": "POST",
+      "path": "/linked_in_company_pages/connect",
+      "file": "apis/post__linked_in_company_pages_connect.md",
+      "purpose": "Connects LinkedIn company pages after an authorization or migration token is returned.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "temp_token": "<temporary_linkedin_token>"
+        }
+      },
+      "response_shape_mock": {
+        "success": true,
+        "connected_pages": [
+          {
+            "id": "page_123",
+            "name": "Example Company"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delete company page",
+      "modules": [
+        "Settings"
+      ],
+      "method": "DELETE",
+      "path": "/linked_in_company_pages",
+      "file": "apis/delete__linked_in_company_pages.md",
+      "purpose": "Disconnects a LinkedIn company page.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "linked_in_company_page_id": "page_123"
+        }
+      },
+      "response_shape_mock": {
+        "success": true
+      }
+    },
+    {
+      "name": "Company page info lookup",
+      "modules": [
+        "Settings"
+      ],
+      "method": "GET",
+      "path": "/linked_in_company_pages/info",
+      "file": "apis/get__linked_in_company_pages_info.md",
+      "purpose": "Looks up public metadata for a LinkedIn company page before connecting or validating it.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "query": {
+          "company_url": "https://www.linkedin.com/company/example-company/",
+          "linked_in_account_id": "s_X8epv5b1"
+        }
+      },
+      "response_shape_mock": {
+        "name": "Example Company",
+        "page_id": "urn:li:organization:123456",
+        "logo_url": "https://media.licdn.com/..."
+      }
+    },
+    {
+      "name": "Analytics trend cards",
+      "modules": [
+        "Analytics"
+      ],
+      "method": "POST",
+      "path": "/analytics/v2/cards",
+      "file": "apis/post__analytics_v2_cards.md",
+      "purpose": "Primary Trends tab API. Fetches chart series for followers, impressions, reactions, comments, reshares, and top post performance.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "linkedin_account_id": "s_X8epv5b1",
+          "linked_in_company_page_id": null,
+          "cards_request": [
+            {
+              "type": "followers_trend",
+              "params": {
+                "start_date": "2026-08-03",
+                "end_date": "2026-09-02"
+              }
+            },
+            {
+              "type": "impressions_trend",
+              "params": {
+                "start_date": "2026-08-03",
+                "end_date": "2026-09-02"
+              }
+            },
+            {
+              "type": "reactions_trend",
+              "params": {
+                "start_date": "2026-08-03",
+                "end_date": "2026-09-02"
+              }
+            },
+            {
+              "type": "comments_trend",
+              "params": {
+                "start_date": "2026-08-03",
+                "end_date": "2026-09-02"
+              }
+            },
+            {
+              "type": "reshares_trend",
+              "params": {
+                "start_date": "2026-08-03",
+                "end_date": "2026-09-02"
+              }
+            },
+            {
+              "type": "posts_performance",
+              "params": {
+                "start_date": "2026-08-03",
+                "end_date": "2026-09-02",
+                "limit": 100
+              }
+            }
+          ]
+        }
+      },
+      "response_shape_mock": {
+        "cards": [
+          {
+            "type": "followers_trend",
+            "success": true,
+            "data": {
+              "total": 12840,
+              "change": 236,
+              "change_percentage": 1.87,
+              "series": [
+                {
+                  "date": "2026-08-03",
+                  "value": 12604
+                },
+                {
+                  "date": "2026-08-10",
+                  "value": 12688
+                },
+                {
+                  "date": "2026-08-17",
+                  "value": 12761
+                },
+                {
+                  "date": "2026-08-24",
+                  "value": 12812
+                },
+                {
+                  "date": "2026-09-02",
+                  "value": 12840
+                }
+              ]
+            }
+          },
+          {
+            "type": "impressions_trend",
+            "success": true,
+            "data": {
+              "total": 48210,
+              "change_percentage": 22.4,
+              "series": [
+                {
+                  "date": "2026-08-03",
+                  "value": 8200
+                },
+                {
+                  "date": "2026-08-10",
+                  "value": 9100
+                },
+                {
+                  "date": "2026-08-17",
+                  "value": 10340
+                },
+                {
+                  "date": "2026-08-24",
+                  "value": 9600
+                },
+                {
+                  "date": "2026-09-02",
+                  "value": 10970
+                }
+              ]
+            }
+          },
+          {
+            "type": "posts_performance",
+            "success": true,
+            "data": {
+              "posts": [
+                {
+                  "id": "li_post_123",
+                  "published_at": "2026-08-28T08:15:00Z",
+                  "text": "What I learned building in public...",
+                  "impressions": 12400,
+                  "reactions": 382,
+                  "comments": 41,
+                  "reshares": 18,
+                  "engagement_rate": 3.56,
+                  "url": "https://www.linkedin.com/feed/update/..."
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Weekly reports list",
+      "modules": [
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/analytics/weekly_reports",
+      "file": "apis/get__analytics_weekly_reports.md",
+      "purpose": "Lists recent weekly analytics reports for a profile or company page.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "query": {
+          "limit": 12,
+          "linked_in_account_id": "s_X8epv5b1",
+          "linked_in_company_page_id": null
+        }
+      },
+      "response_shape_mock": {
+        "reports": [
+          {
+            "week_start_date": "2026-08-24",
+            "week_end_date": "2026-08-30",
+            "summary": "Impressions grew 18% while comments were flat.",
+            "metrics": {
+              "impressions": 10970,
+              "followers_gained": 68,
+              "reactions": 240,
+              "comments": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Weekly report detail",
+      "modules": [
+        "Analytics"
+      ],
+      "method": "GET",
+      "path": "/analytics/weekly_reports/:week_start_date",
+      "file": "apis/get__analytics_weekly_reports_by_week_start_date.md",
+      "purpose": "Fetches a specific weekly report detail.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "week_start_date": "2026-08-24"
+        },
+        "query": {
+          "linked_in_account_id": "s_X8epv5b1",
+          "linked_in_company_page_id": null
+        }
+      },
+      "response_shape_mock": {
+        "week_start_date": "2026-08-24",
+        "week_end_date": "2026-08-30",
+        "key_takeaways": [
+          "Posts with tactical examples drove the highest saves.",
+          "Morning posts received more early comments."
+        ],
+        "metrics": {
+          "impressions": 10970,
+          "profile_views": 410,
+          "followers_gained": 68,
+          "reactions": 240,
+          "comments": 32,
+          "reshares": 12
+        },
+        "top_posts": [
+          {
+            "id": "li_post_123",
+            "text": "What I learned...",
+            "impressions": 12400,
+            "engagement_rate": 3.56
+          }
+        ],
+        "content_suggestions": [
+          {
+            "topic": "Break down a failed experiment",
+            "reason": "High-comment reflective posts performed best."
+          }
+        ]
+      }
+    },
+    {
+      "name": "Post generation templates v2",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "GET",
+      "path": "/post_generation_templates/v2",
+      "file": "apis/get__post_generation_templates_v2.md",
+      "purpose": "Fetches grouped/modern templates shown in the Post Generator template picker.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "categories": [
+          {
+            "id": "cat_founder",
+            "name": "Founder",
+            "templates": [
+              {
+                "id": "template_lesson",
+                "title": "Lesson learned",
+                "description": "Turn an experience into a LinkedIn post.",
+                "inputs": [
+                  "topic",
+                  "audience",
+                  "tone"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Post generation template detail",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "GET",
+      "path": "/post_generation_templates/:id",
+      "file": "apis/get__post_generation_templates_by_id.md",
+      "purpose": "Fetches one template definition, including fields/prompts used to generate a post.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "id": "template_lesson"
+        }
+      },
+      "response_shape_mock": {
+        "id": "template_lesson",
+        "title": "Lesson learned",
+        "fields": [
+          {
+            "key": "topic",
+            "label": "Topic",
+            "type": "textarea",
+            "required": true
+          },
+          {
+            "key": "audience",
+            "label": "Audience",
+            "type": "text",
+            "required": false
+          },
+          {
+            "key": "tone",
+            "label": "Tone",
+            "type": "select",
+            "options": [
+              "practical",
+              "story",
+              "contrarian"
+            ]
+          }
+        ],
+        "prompt_schema": {
+          "generation_type": "linkedin_post",
+          "supports_carousel": true
+        }
+      }
+    },
+    {
+      "name": "Generate post from template params",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/generate_post",
+      "file": "apis/post__ai_generate_post.md",
+      "purpose": "Generates a LinkedIn post from selected template parameters.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "params": {
+            "template_id": "template_lesson",
+            "topic": "shipping a feature before it felt perfect",
+            "audience": "SaaS founders",
+            "tone": "practical",
+            "linked_in_account_id": "s_X8epv5b1"
+          }
+        }
+      },
+      "response_shape_mock": {
+        "content_generation_trace_id": "trace_123",
+        "post": "I used to wait until features felt perfect before shipping...",
+        "alternatives": [
+          "Shipping early taught me something uncomfortable..."
+        ],
+        "metadata": {
+          "template_id": "template_lesson",
+          "model": "server_selected"
+        }
+      }
+    },
+    {
+      "name": "Generate post from topic",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/generate_post_from_topic",
+      "file": "apis/post__ai_generate_post_from_topic.md",
+      "purpose": "Generates a post from a simple topic without selecting a full template.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "topic": "What founders misunderstand about onboarding"
+        }
+      },
+      "response_shape_mock": {
+        "post": "Most onboarding problems are not UI problems...",
+        "content_generation_trace_id": "trace_124"
+      }
+    },
+    {
+      "name": "Generate post ideas",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/generate_post_ideas",
+      "file": "apis/post__ai_generate_post_ideas.md",
+      "purpose": "Returns idea prompts for future LinkedIn posts.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "industry": "B2B SaaS",
+          "use_latest_news": true
+        }
+      },
+      "response_shape_mock": {
+        "ideas": [
+          {
+            "title": "The hidden cost of activation metrics",
+            "angle": "challenge a common dashboard habit"
+          },
+          {
+            "title": "How I would redesign onboarding emails",
+            "angle": "tactical teardown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Score generated post",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/generate_post_score/v2",
+      "file": "apis/post__ai_generate_post_score_v2.md",
+      "purpose": "Scores a draft post and returns improvement signals.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "post": "Most onboarding problems are not UI problems..."
+        }
+      },
+      "response_shape_mock": {
+        "score": 82,
+        "dimensions": [
+          {
+            "name": "hook",
+            "score": 78,
+            "suggestion": "Make the first line more specific."
+          },
+          {
+            "name": "clarity",
+            "score": 90,
+            "suggestion": "Good concrete language."
+          },
+          {
+            "name": "engagement",
+            "score": 76,
+            "suggestion": "Add a stronger question at the end."
+          }
+        ]
+      }
+    },
+    {
+      "name": "Rewrite post",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/rewrite/v2",
+      "file": "apis/post__ai_rewrite_v2.md",
+      "purpose": "Rewrites draft text using a rewrite template.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "text": "Draft post text...",
+          "template_id": "rewrite_more_concise"
+        }
+      },
+      "response_shape_mock": {
+        "rewritten_text": "A tighter version of the draft...",
+        "content_generation_trace_id": "trace_125"
+      }
+    },
+    {
+      "name": "Generate carousel content",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/generate_carousel_content",
+      "file": "apis/post__ai_generate_carousel_content.md",
+      "purpose": "Transforms a post into carousel slide text.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "post": "Most onboarding problems are not UI problems...",
+          "slides_format": "problem_solution",
+          "number_of_slides": 6
+        }
+      },
+      "response_shape_mock": {
+        "title": "Onboarding is a trust problem",
+        "slides": [
+          {
+            "index": 1,
+            "headline": "Onboarding is not just UI",
+            "body": "The real issue is confidence."
+          },
+          {
+            "index": 2,
+            "headline": "Users need one clear win",
+            "body": "Show value before asking for setup."
+          }
+        ]
+      }
+    },
+    {
+      "name": "Generate hooks",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/generate_hooks",
+      "file": "apis/post__ai_generate_hooks.md",
+      "purpose": "Generates alternate hooks/opening lines for a draft.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "post_content": "Draft post body...",
+          "number_of_hooks": 5
+        }
+      },
+      "response_shape_mock": {
+        "hooks": [
+          "Most onboarding advice starts in the wrong place.",
+          "Your onboarding flow may not be the problem."
+        ]
+      }
+    },
+    {
+      "name": "Generate image",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/ai/generate_image",
+      "file": "apis/post__ai_generate_image.md",
+      "purpose": "Generates an image suggestion/asset for a post.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "post": "Most onboarding problems are not UI problems..."
+        }
+      },
+      "response_shape_mock": {
+        "image_url": "https://cdn.example.com/generated/image.png",
+        "prompt": "Clean editorial illustration about onboarding confidence"
+      }
+    },
+    {
+      "name": "Create post",
+      "modules": [
+        "Post Generator",
+        "Viral Posts",
+        "Influencers"
+      ],
+      "method": "POST",
+      "path": "/posts",
+      "file": "apis/post__posts.md",
+      "purpose": "Creates a draft/scheduled post from generated text, viral post inspiration, or influencer inspiration.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "text": "Final LinkedIn post text...",
+          "media_ids": [],
+          "image_urls": [],
+          "video_url": null,
+          "file_url": null,
+          "mentions": [],
+          "rich_text": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Final LinkedIn post text..."
+                  }
+                ]
+              }
+            ]
+          },
+          "carousel_title": null,
+          "linked_in_account_id": "s_X8epv5b1",
+          "video_title": null,
+          "video_thumbnail_url": null,
+          "tags": [],
+          "show_link_preview": true,
+          "link_preview_data": null,
+          "source": "post_generator"
+        }
+      },
+      "response_shape_mock": {
+        "id": "post_123",
+        "status": "draft",
+        "text": "Final LinkedIn post text...",
+        "created_at": "2026-09-02T05:45:00Z"
+      }
+    },
+    {
+      "name": "Update post",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "PUT",
+      "path": "/posts/:id",
+      "file": "apis/put__posts_by_id.md",
+      "purpose": "Updates an existing draft/scheduled post.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "id": "post_123"
+        },
+        "body": {
+          "text": "Edited LinkedIn post text...",
+          "media_ids": [],
+          "image_urls": [],
+          "video_url": null,
+          "file_url": null,
+          "mentions": [],
+          "rich_text": {
+            "type": "doc",
+            "content": []
+          },
+          "carousel_title": null,
+          "linked_in_account_id": "s_X8epv5b1",
+          "tags": [],
+          "publish_from_type": "profile",
+          "linked_in_company_page_id": null,
+          "show_link_preview": true,
+          "link_preview_data": null,
+          "source": "post_generator"
+        }
+      },
+      "response_shape_mock": {
+        "id": "post_123",
+        "status": "draft",
+        "text": "Edited LinkedIn post text..."
+      }
+    },
+    {
+      "name": "Unfurl post link",
+      "modules": [
+        "Post Generator"
+      ],
+      "method": "POST",
+      "path": "/posts/unfurl",
+      "file": "apis/post__posts_unfurl.md",
+      "purpose": "Fetches link preview metadata for URLs pasted into a post.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "url": "https://example.com/article"
+        }
+      },
+      "response_shape_mock": {
+        "title": "Example article title",
+        "description": "Short preview description.",
+        "image_url": "https://example.com/og.png",
+        "url": "https://example.com/article"
+      }
+    },
+    {
+      "name": "Search viral content",
+      "modules": [
+        "Viral Posts"
+      ],
+      "method": "GET",
+      "path": "/content_search",
+      "file": "apis/get__content_search.md",
+      "purpose": "Searches public/high-performing LinkedIn content by query, date range, and minimum engagement.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "query": {
+          "query": "startup growth",
+          "page": 1,
+          "per_page": 20,
+          "date_from": "2026-08-03",
+          "date_to": "2026-09-02",
+          "min_engagement": 100
+        }
+      },
+      "response_shape_mock": {
+        "posts": [
+          {
+            "id": "viral_123",
+            "author_name": "Example Creator",
+            "author_headline": "Founder",
+            "author_profile_url": "https://www.linkedin.com/in/example/",
+            "text": "A viral LinkedIn post preview...",
+            "published_at": "2026-08-20T10:00:00Z",
+            "reactions": 2100,
+            "comments": 180,
+            "reshares": 74,
+            "engagement": 2354,
+            "url": "https://www.linkedin.com/feed/update/..."
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "per_page": 20,
+          "total": 842
+        }
+      }
+    },
+    {
+      "name": "Influencer categories",
+      "modules": [
+        "Influencers"
+      ],
+      "method": "GET",
+      "path": "/influencers/categories",
+      "file": "apis/get__influencers_categories.md",
+      "purpose": "Lists categories used to browse influencers.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "categories": [
+          {
+            "id": "cat_startups",
+            "name": "Startups",
+            "influencer_count": 120
+          },
+          {
+            "id": "cat_marketing",
+            "name": "Marketing",
+            "influencer_count": 94
+          }
+        ]
+      }
+    },
+    {
+      "name": "Influencers by category",
+      "modules": [
+        "Influencers"
+      ],
+      "method": "GET",
+      "path": "/influencers",
+      "file": "apis/get__influencers.md",
+      "purpose": "Lists influencers for a selected category.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "query": {
+          "category_id": "cat_startups"
+        }
+      },
+      "response_shape_mock": {
+        "influencers": [
+          {
+            "id": "inf_123",
+            "name": "Example Creator",
+            "headline": "Founder and writer",
+            "profile_url": "https://www.linkedin.com/in/example/",
+            "avatar_url": "https://media.licdn.com/...",
+            "followers_count": 95000,
+            "average_engagement": 812
+          }
+        ]
+      }
+    },
+    {
+      "name": "Influencer category posts",
+      "modules": [
+        "Influencers"
+      ],
+      "method": "GET",
+      "path": "/influencers/categories/:category_id/posts",
+      "file": "apis/get__influencers_categories_by_category_id_posts.md",
+      "purpose": "Fetches posts across a category of influencers.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "category_id": "cat_startups"
+        },
+        "query": {
+          "per_page": 20,
+          "page": 1
+        }
+      },
+      "response_shape_mock": {
+        "posts": [
+          {
+            "id": "inf_post_123",
+            "influencer_id": "inf_123",
+            "author_name": "Example Creator",
+            "text": "A high-performing post in this category...",
+            "reactions": 980,
+            "comments": 76,
+            "reshares": 31,
+            "published_at": "2026-08-22T12:00:00Z",
+            "url": "https://www.linkedin.com/feed/update/..."
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "per_page": 20,
+          "total": 430
+        }
+      }
+    },
+    {
+      "name": "Single influencer posts",
+      "modules": [
+        "Influencers"
+      ],
+      "method": "GET",
+      "path": "/influencers/:id/posts",
+      "file": "apis/get__influencers_by_id_posts.md",
+      "purpose": "Fetches recent/high-performing posts for one influencer.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "pathParams": {
+          "id": "inf_123"
+        }
+      },
+      "response_shape_mock": {
+        "influencer": {
+          "id": "inf_123",
+          "name": "Example Creator",
+          "profile_url": "https://www.linkedin.com/in/example/"
+        },
+        "posts": [
+          {
+            "id": "inf_post_456",
+            "text": "This post starts with a strong hook...",
+            "reactions": 1430,
+            "comments": 122,
+            "reshares": 46,
+            "published_at": "2026-08-29T08:00:00Z",
+            "url": "https://www.linkedin.com/feed/update/..."
+          }
+        ]
+      }
+    },
+    {
+      "name": "Get organization content DNA template",
+      "modules": [
+        "Settings"
+      ],
+      "method": "GET",
+      "path": "/orgs/content_dna_template",
+      "file": "apis/get__orgs_content_dna_template.md",
+      "purpose": "Reads organization-wide content DNA template used for writing style guidance.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        }
+      },
+      "response_shape_mock": {
+        "template": {
+          "voice": "direct, useful, founder-led",
+          "audience": "B2B SaaS operators",
+          "pillars": [
+            "product lessons",
+            "growth experiments",
+            "team rituals"
+          ],
+          "avoid": [
+            "generic motivation",
+            "empty listicles"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update organization content DNA template",
+      "modules": [
+        "Settings"
+      ],
+      "method": "PUT",
+      "path": "/orgs/content_dna_template",
+      "file": "apis/put__orgs_content_dna_template.md",
+      "purpose": "Updates organization-wide content DNA template.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <ACCESS_TOKEN>",
+          "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+          "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+          "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+          "OrgID": "<ORG_ID_IF_PRESENT>",
+          "Timezone": "Asia/Kolkata",
+          "Supergrow-x-headers": "<base64 client metadata>"
+        },
+        "body": {
+          "voice": "direct, useful, founder-led",
+          "audience": "B2B SaaS operators",
+          "pillars": [
+            "product lessons",
+            "growth experiments",
+            "team rituals"
+          ],
+          "avoid": [
+            "generic motivation",
+            "empty listicles"
+          ]
+        }
+      },
+      "response_shape_mock": {
+        "success": true,
+        "updated_at": "2026-09-02T05:45:00Z"
+      }
+    }
+  ]
+}

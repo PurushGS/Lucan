@@ -1,0 +1,58 @@
+---
+name: List connected company pages
+modules: Settings, Analytics
+method: GET
+path: /linked_in_company_pages
+base_url: https://api.supergrow.ai/api/v1
+source: Observed live on analytics routes and mapped in requestFactory export _r/_r.
+---
+
+# List connected company pages
+
+## Why this API matters
+
+Lists LinkedIn company pages connected to the current workspace.
+
+## Frontend usage
+
+Profile/company analytics target selector and publishing account choices.
+
+## Request
+
+```json
+{
+  "method": "GET",
+  "url": "https://api.supergrow.ai/api/v1/linked_in_company_pages",
+  "headers": {
+    "Authorization": "Bearer <ACCESS_TOKEN>",
+    "ProviderToken": "<LINKEDIN_PROVIDER_TOKEN>",
+    "ProviderRefreshToken": "<LINKEDIN_PROVIDER_REFRESH_TOKEN>",
+    "WorkspaceID": "47b4efd3-8000-46a5-9630-14ab228b017f",
+    "OrgID": "<ORG_ID_IF_PRESENT>",
+    "Timezone": "Asia/Kolkata",
+    "Supergrow-x-headers": "<base64 client metadata>"
+  }
+}
+```
+
+## Response shape / mock data
+
+```json
+{
+  "pages": [
+    {
+      "id": "page_123",
+      "page_id": "urn:li:organization:123456",
+      "name": "Example Company",
+      "logo_url": "https://media.licdn.com/...",
+      "linked_in_account_id": "s_X8epv5b1"
+    }
+  ]
+}
+```
+
+## LLM implementation notes
+
+- Treat response data as a realistic contract/mock, not a confirmed production response dump.
+- Keep auth values server-side. Do not expose ProviderToken, ProviderRefreshToken, or bearer tokens to the frontend.
+- Scope every workspace-specific request with WorkspaceID and timezone-aware dates.
