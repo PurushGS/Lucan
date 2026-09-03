@@ -335,6 +335,7 @@ button {
 textarea,
 input[type="url"],
 input[type="text"],
+input[type="datetime-local"],
 select {
   width: 100%;
   border: 1px solid var(--line);
@@ -427,10 +428,59 @@ select:focus {
   font-weight: 760;
 }
 
+.draft-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: #eef4f6;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.badge.scheduled {
+  background: #e8f2ff;
+  color: var(--blue);
+}
+
+.badge.published {
+  background: #e4f8f4;
+  color: var(--teal-dark);
+}
+
 .draft-card p {
   margin: 0;
   color: var(--ink);
   line-height: 1.5;
+}
+
+.calendar-list {
+  display: grid;
+  gap: 10px;
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfd;
 }
 
 .dna-grid {

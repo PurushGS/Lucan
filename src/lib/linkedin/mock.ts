@@ -167,3 +167,15 @@ export function getMockLinkedInProfileMetrics(): LinkedInProfileMetrics {
     },
   };
 }
+
+export function publishMockLinkedInPost(postText: string) {
+  const stableId = Buffer.from(postText).toString("base64url").slice(0, 18) || "empty-post";
+  return {
+    urn: `urn:li:share:mock-published-${stableId}`,
+    raw: {
+      provider: "mock",
+      lifecycleState: "PUBLISHED",
+      commentary: postText,
+    },
+  };
+}

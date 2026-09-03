@@ -2,14 +2,15 @@
 
 import {
   BarChart3,
+  CalendarDays,
   CheckCircle2,
-  Database,
   FileText,
   LayoutDashboard,
   Link2,
   LogOut,
   PenLine,
   Save,
+  Send,
   Sparkles,
   UserRound,
   Youtube,
@@ -26,7 +27,7 @@ import type {
   SourceType,
 } from "@/src/types/lucan";
 
-type View = "dashboard" | "generator" | "drafts" | "analytics" | "dna" | "settings";
+type View = "dashboard" | "generator" | "drafts" | "calendar" | "analytics" | "dna" | "settings";
 
 export type AppNotice = {
   kind: "success" | "error";
@@ -53,6 +54,7 @@ const navItems: Array<{ id: View; label: string; icon: React.ComponentType<{ siz
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "generator", label: "Post Generator", icon: PenLine },
   { id: "drafts", label: "Drafts", icon: FileText },
+  { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "dna", label: "Content DNA", icon: Sparkles },
   { id: "settings", label: "Settings", icon: UserRound },
@@ -179,7 +181,8 @@ export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | n
 
         {view === "dashboard" && <Dashboard analytics={analytics} drafts={drafts} dna={dna} linkedinStatus={linkedinStatus} setView={setView} />}
         {view === "generator" && <Generator dna={dna} onSaved={refresh} />}
-        {view === "drafts" && <Drafts drafts={drafts} />}
+        {view === "drafts" && <Drafts drafts={drafts} onUpdated={refresh} />}
+        {view === "calendar" && <Calendar drafts={drafts} setView={setView} />}
         {view === "analytics" && <Analytics analytics={analytics} />}
         {view === "dna" && <ContentDna dna={dna} dnaRecord={dnaRecord} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
         {view === "settings" && <Settings user={user} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
@@ -202,11 +205,15 @@ function Dashboard({
   setView: (view: View) => void;
 }) {
   const linkedin = analytics?.linkedin;
+  const scheduledCount = drafts.filter((draft) => draft.status === "scheduled").length;
+  const publishedCount = drafts.filter((draft) => draft.status === "published").length;
 
   return (
     <>
       <div className="dashboard-grid">
         <Metric label="Drafts" value={analytics?.drafts ?? 0} />
+        <Metric label="Scheduled" value={scheduledCount} />
+        <Metric label="Published" value={publishedCount} />
         <Metric label="Generations" value={analytics?.generations ?? 0} />
         <Metric label="Content DNA" value={analytics?.hasDna ? "Ready" : "Pending"} />
         <Metric label="LinkedIn posts" value={linkedin?.account?.postsImported ?? 0} />
@@ -225,6 +232,9 @@ function Dashboard({
             </button>
             <button className="secondary-button" onClick={() => setView("dna")} type="button">
               {dna ? "View Content DNA" : "Connect LinkedIn"}
+            </button>
+            <button className="secondary-button" onClick={() => setView("calendar")} type="button">
+              Calendar
             </button>
             <p className="fine-print">
               {linkedinStatus?.connected
@@ -423,7 +433,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
   );
 }
 
-function Drafts({ drafts }: { drafts: Draft[] }) {
+function Drafts({ drafts, onUpdated }: { drafts: Draft[]; onUpdated: () => Promise<void> }) {
   const [selectedId, setSelectedId] = useState<string | null>(drafts[0]?.id ?? null);
   const selected = drafts.find((draft) => draft.id === selectedId) ?? drafts[0] ?? null;
 
@@ -439,9 +449,50 @@ function Drafts({ drafts }: { drafts: Draft[] }) {
       </section>
       <section className="panel section">
         <h2>Editor</h2>
-        {selected ? <DraftEditor draft={selected} /> : <div className="status">Select or create a draft first.</div>}
+        {selected ? <DraftEditor draft={selected} onUpdated={onUpdated} /> : <div className="status">Select or create a draft first.</div>}
       </section>
     </div>
+  );
+}
+
+function Calendar({ drafts, setView }: { drafts: Draft[]; setView: (view: View) => void }) {
+  const scheduled = drafts
+    .filter((draft) => draft.scheduledAt || draft.publishedAt)
+    .sort((a, b) => {
+      const left = a.scheduledAt ?? a.publishedAt ?? a.createdAt;
+      const right = b.scheduledAt ?? b.publishedAt ?? b.createdAt;
+      return new Date(left).getTime() - new Date(right).getTime();
+    });
+
+  return (
+    <section className="panel section">
+      <h2>Calendar</h2>
+      {scheduled.length ? (
+        <div className="calendar-list">
+          {scheduled.map((draft) => (
+            <article className="calendar-row" key={draft.id}>
+              <div>
+                <strong>{draft.title}</strong>
+                <p className="fine-print">{shorten(draft.content, 180)}</p>
+              </div>
+              <div>
+                <span className={`badge ${draft.status}`}>{draft.status}</span>
+                <p className="fine-print" style={{ marginTop: 8 }}>
+                  {formatDraftDate(draft.scheduledAt ?? draft.publishedAt)}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="status">
+          No scheduled or published posts yet.
+          <button className="secondary-button" onClick={() => setView("drafts")} style={{ marginTop: 12 }} type="button">
+            Open drafts
+          </button>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -730,18 +781,21 @@ function DnaCard({ title, text }: { title: string; text: string }) {
   );
 }
 
-function DraftEditor({ draft }: { draft: Draft }) {
+function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Promise<void> }) {
   const [title, setTitle] = useState(draft.title);
   const [content, setContent] = useState(draft.content);
+  const [scheduledAt, setScheduledAt] = useState(toDateTimeInputValue(draft.scheduledAt));
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [scoring, setScoring] = useState(false);
   const [score, setScore] = useState<PostScore | null>(null);
 
   useEffect(() => {
     setTitle(draft.title);
     setContent(draft.content);
+    setScheduledAt(toDateTimeInputValue(draft.scheduledAt));
     setStatus("");
     setError("");
     setScore(null);
@@ -760,8 +814,43 @@ function DraftEditor({ draft }: { draft: Draft }) {
       setError(payload.error?.message ?? "Draft update failed.");
     } else {
       setStatus("Draft saved");
+      await onUpdated();
     }
     setBusy(false);
+  }
+
+  async function schedule() {
+    if (!scheduledAt) return;
+    setBusy(true);
+    setError("");
+    const response = await fetch(`/api/drafts/${draft.id}/schedule`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scheduledAt: new Date(scheduledAt).toISOString() }),
+    });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "Schedule failed.");
+    } else {
+      setStatus("Draft scheduled");
+      await onUpdated();
+    }
+    setBusy(false);
+  }
+
+  async function publish() {
+    setPublishing(true);
+    setError("");
+    const response = await fetch(`/api/drafts/${draft.id}/publish`, { method: "POST" });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "Publish failed.");
+    } else {
+      const urn = (payload.linkedin as { urn?: string } | undefined)?.urn;
+      setStatus(urn ? `Published to LinkedIn: ${urn}` : "Published to LinkedIn");
+      await onUpdated();
+    }
+    setPublishing(false);
   }
 
   async function checkScore() {
@@ -791,9 +880,25 @@ function DraftEditor({ draft }: { draft: Draft }) {
         <span>{content.length} characters</span>
         <textarea className="post-editor" onChange={(event) => setContent(event.target.value)} rows={18} value={content} />
       </label>
+      <div className="draft-meta">
+        <span className={`badge ${draft.status}`}>{draft.status}</span>
+        {draft.scheduledAt ? <span>Scheduled {formatDraftDate(draft.scheduledAt)}</span> : null}
+        {draft.publishedAt ? <span>Published {formatDraftDate(draft.publishedAt)}</span> : null}
+        {draft.linkedinPostUrn ? <span>{draft.linkedinPostUrn}</span> : null}
+      </div>
+      <label className="field">
+        <span>Schedule time</span>
+        <input onChange={(event) => setScheduledAt(event.target.value)} type="datetime-local" value={scheduledAt} />
+      </label>
       <div className="actions">
         <button className="primary-button" disabled={busy} onClick={save} type="button">
           {busy ? "Saving..." : "Save as draft"}
+        </button>
+        <button className="secondary-button" disabled={busy || !scheduledAt} onClick={schedule} type="button">
+          <CalendarDays size={16} /> Schedule
+        </button>
+        <button className="secondary-button" disabled={publishing || content.length < 20} onClick={publish} type="button">
+          <Send size={16} /> {publishing ? "Publishing..." : "Publish"}
         </button>
         <button className="secondary-button" disabled={scoring || content.length < 40} onClick={checkScore} type="button">
           <CheckCircle2 size={16} /> {scoring ? "Checking..." : "Check score"}
@@ -881,8 +986,13 @@ function DraftList({
         >
           <header>
             <span>{draft.title}</span>
-            <span>{draft.sourceType}</span>
+            <span className={`badge ${draft.status}`}>{draft.status}</span>
           </header>
+          <div className="draft-meta">
+            <span>{draft.sourceType}</span>
+            {draft.scheduledAt ? <span>Scheduled {formatDraftDate(draft.scheduledAt)}</span> : null}
+            {draft.publishedAt ? <span>Published {formatDraftDate(draft.publishedAt)}</span> : null}
+          </div>
           <p>{draft.content}</p>
         </article>
       ))}
@@ -911,4 +1021,18 @@ function formatOptionalNumber(value: number | null | undefined) {
 
 function shorten(value: string, maxLength: number) {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
+}
+
+function toDateTimeInputValue(value: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+function formatDraftDate(value: string | null) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString();
 }

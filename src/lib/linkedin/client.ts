@@ -6,6 +6,7 @@ import {
   getMockLinkedInPosts,
   getMockLinkedInProfileMetrics,
   mockLinkedInProfile,
+  publishMockLinkedInPost,
 } from "./mock";
 import type { LinkedInPostAnalytics } from "@/src/types/lucan";
 
@@ -42,6 +43,11 @@ export type LinkedInProfileMetrics = {
     followers: unknown;
     connections: unknown;
   };
+};
+
+export type LinkedInPublishResult = {
+  urn: string;
+  raw: unknown;
 };
 
 export class LinkedInApiError extends Error {
@@ -203,6 +209,45 @@ export async function fetchLinkedInProfileMetrics(accessToken: string, memberId:
   };
 }
 
+export async function publishLinkedInPost(input: {
+  accessToken: string;
+  memberId: string;
+  postText: string;
+}): Promise<LinkedInPublishResult> {
+  const config = getLinkedInConfig();
+  if (config.provider === "mock") {
+    return publishMockLinkedInPost(input.postText);
+  }
+
+  const response = await fetch("https://api.linkedin.com/rest/posts", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${input.accessToken}`,
+      "LinkedIn-Version": config.apiVersion,
+      "X-Restli-Protocol-Version": "2.0.0",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      author: `urn:li:person:${input.memberId}`,
+      commentary: input.postText,
+      visibility: "PUBLIC",
+      distribution: {
+        feedDistribution: "MAIN_FEED",
+        targetEntities: [],
+        thirdPartyDistributionChannels: [],
+      },
+      lifecycleState: "PUBLISHED",
+      isReshareDisabledByAuthor: false,
+    }),
+  });
+
+  const raw = await readLinkedInResponse<unknown>(response, "Could not publish LinkedIn post.");
+  return {
+    urn: response.headers.get("x-linkedin-id") || readPublishedUrn(raw),
+    raw,
+  };
+}
+
 async function fetchMemberPostMetric(accessToken: string, postUrn: string, queryType: string) {
   const config = getLinkedInConfig();
   const entity = `(${readAnalyticsEntityType(postUrn)}:${encodeURIComponent(postUrn)})`;
@@ -313,6 +358,14 @@ function readNumber(value: unknown) {
     return Number.isFinite(parsed) ? parsed : null;
   }
   return null;
+}
+
+function readPublishedUrn(raw: unknown) {
+  if (raw && typeof raw === "object" && "id" in raw && typeof raw.id === "string") {
+    return raw.id;
+  }
+
+  return `urn:li:share:published-${Date.now()}`;
 }
 
 function toLinkedInPost(raw: unknown): LinkedInPost | null {

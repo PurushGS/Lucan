@@ -37,6 +37,9 @@ async function createSchema() {
         title text not null,
         content text not null,
         status text not null default 'draft',
+        scheduled_at text,
+        published_at text,
+        linkedin_post_urn text,
         created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
         updated_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
       )`,
@@ -107,6 +110,7 @@ async function createSchema() {
   );
 
   await addMissingContentDnaColumns();
+  await addMissingDraftColumns();
 }
 
 async function addMissingContentDnaColumns() {
@@ -118,6 +122,22 @@ async function addMissingContentDnaColumns() {
     ["median_words", "alter table content_dna add column median_words integer not null default 0"],
     ["stats_json", "alter table content_dna add column stats_json text not null default '{}'"],
     ["analysis_source", "alter table content_dna add column analysis_source text not null default 'manual'"],
+  ] as const;
+
+  for (const [column, sql] of migrations) {
+    if (!columns.has(column)) {
+      await db.execute(sql);
+    }
+  }
+}
+
+async function addMissingDraftColumns() {
+  const existing = await db.execute("pragma table_info(drafts)");
+  const columns = new Set(existing.rows.map((row) => String(row.name)));
+  const migrations = [
+    ["scheduled_at", "alter table drafts add column scheduled_at text"],
+    ["published_at", "alter table drafts add column published_at text"],
+    ["linkedin_post_urn", "alter table drafts add column linkedin_post_urn text"],
   ] as const;
 
   for (const [column, sql] of migrations) {

@@ -15,6 +15,9 @@ export type Draft = {
   title: string;
   content: string;
   status: "draft" | "scheduled" | "published";
+  scheduledAt: string | null;
+  publishedAt: string | null;
+  linkedinPostUrn: string | null;
   createdAt: string;
   updatedAt: string;
 };
