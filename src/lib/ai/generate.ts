@@ -1,4 +1,4 @@
-import { completeJson } from "./openai";
+import { completeJson, getScoreModels, isRetryableAIError } from "./openai";
 import { parseJsonObject } from "./json";
 import { dnaPrompt, generationPrompt, scorePrompt } from "./prompts";
 import type { ContentDnaProfile, GenerationResult, PostScore, SourceType } from "@/src/types/lucan";
@@ -21,6 +21,23 @@ export async function generateContentDna(posts: string) {
 }
 
 export async function scorePost(input: { post: string; dna: ContentDnaProfile | null }) {
-  const response = await completeJson(scorePrompt(input));
-  return parseJsonObject<PostScore>(response);
+  const models = getScoreModels();
+  let lastError: unknown;
+
+  for (const model of models) {
+    try {
+      const response = await completeJson(scorePrompt(input), { model, temperature: 0.25 });
+      return {
+        score: parseJsonObject<PostScore>(response),
+        model,
+      };
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableAIError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("All score models failed.");
 }

@@ -257,6 +257,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
   const [result, setResult] = useState<GenerateResponse | null>(null);
   const [draftContent, setDraftContent] = useState("");
   const [score, setScore] = useState<PostScore | null>(null);
+  const [scoreModel, setScoreModel] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [busy, setBusy] = useState(false);
@@ -290,6 +291,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     setResult(payload as GenerateResponse);
     setDraftContent((payload as GenerateResponse).post);
     setScore(null);
+    setScoreModel("");
     setStatus("Generated");
     setBusy(false);
   }
@@ -333,7 +335,9 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     if (!response.ok) {
       setError(payload.error?.message ?? "Score check failed.");
     } else {
-      setScore((payload as { score: PostScore }).score);
+      const data = payload as { score: PostScore; model?: string };
+      setScore(data.score);
+      setScoreModel(data.model ?? "");
     }
     setScoring(false);
   }
@@ -427,7 +431,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
             <CheckCircle2 size={16} /> {scoring ? "Checking..." : "Check score"}
           </button>
         </div>
-        {score ? <ScorePanel score={score} /> : null}
+        {score ? <ScorePanel model={scoreModel} score={score} /> : null}
       </section>
     </div>
   );
@@ -791,6 +795,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
   const [publishing, setPublishing] = useState(false);
   const [scoring, setScoring] = useState(false);
   const [score, setScore] = useState<PostScore | null>(null);
+  const [scoreModel, setScoreModel] = useState<string>("");
 
   useEffect(() => {
     setTitle(draft.title);
@@ -799,6 +804,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     setStatus("");
     setError("");
     setScore(null);
+    setScoreModel("");
   }, [draft]);
 
   async function save() {
@@ -865,7 +871,9 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     if (!response.ok) {
       setError(payload.error?.message ?? "Score check failed.");
     } else {
-      setScore((payload as { score: PostScore }).score);
+      const data = payload as { score: PostScore; model?: string };
+      setScore(data.score);
+      setScoreModel(data.model ?? "");
     }
     setScoring(false);
   }
@@ -906,14 +914,15 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
       </div>
       {status && <div className="status">{status}</div>}
       {error && <div className="status error">{error}</div>}
-      {score ? <ScorePanel score={score} /> : null}
+      {score ? <ScorePanel model={scoreModel} score={score} /> : null}
     </div>
   );
 }
 
-function ScorePanel({ score }: { score: PostScore }) {
+function ScorePanel({ model, score }: { model: string; score: PostScore }) {
   return (
     <section className="score-panel">
+      {model ? <p className="fine-print" style={{ marginBottom: 10 }}>Analyzed by {model}</p> : null}
       <div className="dashboard-grid">
         <Metric label="Performance" value={`${score.performanceScore}/10`} />
         <Metric label="Authenticity" value={`${score.authenticityScore}/10`} />

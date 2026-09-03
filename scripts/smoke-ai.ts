@@ -1,14 +1,20 @@
-import { completeJson } from "@/src/lib/ai/openai";
+import { scorePost } from "@/src/lib/ai/generate";
 
 async function main() {
-  const raw = await completeJson("Return only JSON with ok true and a message field saying model reachable.");
-  const parsed = JSON.parse(raw) as { ok?: boolean; message?: string };
+  const result = await scorePost({
+    post: "Building reliable LinkedIn content tools starts with real account context, then uses AI to adapt to the writer instead of inventing a fake voice.",
+    dna: null,
+  });
 
-  if (parsed.ok !== true) {
-    throw new Error(`AI smoke test failed: ${raw}`);
+  if (
+    !Number.isFinite(result.score.performanceScore) ||
+    !Number.isFinite(result.score.authenticityScore) ||
+    result.score.criteria.length === 0
+  ) {
+    throw new Error(`Score smoke test failed: ${JSON.stringify(result)}`);
   }
 
-  console.log(parsed.message ?? "Model reachable.");
+  console.log(`Score model reachable: ${result.model}.`);
 }
 
 main().catch((error) => {

@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     const user = await requireUser();
     const { post } = scoreSchema.parse(await request.json());
     const dna = await getContentDna(user.id);
-    const score = await scorePost({ post, dna });
-    return jsonOk({ score });
+    const result = await scorePost({ post, dna });
+    return jsonOk(result);
   } catch (error) {
     return handleRouteError(error);
   }

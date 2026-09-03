@@ -1,4 +1,4 @@
-import type { ContentDnaProfile, GenerationResult, PostScore, SourceType } from "@/src/types/lucan";
+import type { ContentDnaProfile, GenerationResult, SourceType } from "@/src/types/lucan";
 
 export function generationPrompt(input: {
   sourceType: SourceType;
@@ -72,13 +72,21 @@ export function scorePrompt(input: { post: string; dna: ContentDnaProfile | null
     : "No Content DNA saved yet. Judge authenticity by generic human writing quality only.";
 
   return `
-Score this LinkedIn post for performance and authenticity.
+Score this LinkedIn post for performance and authenticity in real time.
 
 Evaluate like Supergrow's post score:
 - Performance: hook quality, originality, clarity, readability, and CTA strength.
 - Authenticity: how human it reads, AI-slop risk, and how well it matches Content DNA when available.
 - Flag exact lines that feel generic, formulaic, over-polished, inflated, or unlike the user's DNA.
-- Provide rewrite suggestions that preserve meaning.
+- Provide rewrite suggestions that preserve meaning and sound like the author.
+
+Scoring calibration:
+- Do not use default-safe values like 7 or 8 unless the evidence truly supports them.
+- Use the full 1-10 range. A bland but readable post can be 4-6. A sharp, specific, DNA-aligned post can be 8-10.
+- Penalize generic startup/social-media phrases, vague authority claims, artificial contrast, and inflated certainty.
+- Reward concrete observations, specific examples, natural rhythm, useful tension, and a CTA that fits the post.
+- Every score must be justified by specific evidence from the post or Content DNA.
+- If Content DNA is missing, say that authenticity is judged only against generic human writing quality.
 
 Content DNA:
 ${dnaText}
@@ -86,28 +94,28 @@ ${dnaText}
 Post:
 ${input.post.slice(0, 16000)}
 
-Return only JSON matching this TypeScript type:
-type PostScore = ${JSON.stringify({
-    performanceScore: 8,
-    authenticityScore: 6,
-    slopRisk: "medium",
-    summary: "Short verdict",
-    voiceCheck: ["Specific observation tied to DNA or human writing quality"],
-    criteria: [
-      { name: "Hook Quality", feedback: "Specific feedback" },
-      { name: "Originality", feedback: "Specific feedback" },
-      { name: "Clarity and Coherency", feedback: "Specific feedback" },
-      { name: "Easy to read", feedback: "Specific feedback" },
-      { name: "Call-To-Action", feedback: "Specific feedback" },
-    ],
-    findings: [
-      {
-        severity: "medium",
-        line: "Exact line from the post",
-        reason: "Why it feels weak, generic, or AI-written",
-        suggestion: "Concrete rewrite or removal suggestion",
-      },
-    ],
-  } satisfies PostScore)}
+Return only valid JSON in this exact shape:
+{
+  "performanceScore": number,
+  "authenticityScore": number,
+  "slopRisk": "low" | "medium" | "high",
+  "summary": string,
+  "voiceCheck": string[],
+  "criteria": [
+    { "name": "Hook Quality", "feedback": string },
+    { "name": "Originality", "feedback": string },
+    { "name": "Clarity and Coherency", "feedback": string },
+    { "name": "Easy to read", "feedback": string },
+    { "name": "Call-To-Action", "feedback": string }
+  ],
+  "findings": [
+    {
+      "severity": "low" | "medium" | "high",
+      "line": string,
+      "reason": string,
+      "suggestion": string
+    }
+  ]
+}
 `;
 }
