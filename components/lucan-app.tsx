@@ -113,7 +113,7 @@ export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | n
       const data = (await linkedinResponse.value.json()) as { status: LinkedInStatus };
       setLinkedInStatus(data.status);
     } else {
-      setLinkedInStatus({ configured: false, connected: false, account: null, dna: null });
+      setLinkedInStatus({ provider: "mock", configured: false, connected: false, account: null, dna: null });
     }
   }, []);
 
@@ -689,14 +689,23 @@ function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
     );
   }
   if (!status.account) {
-    return <div className="status">No LinkedIn account connected.</div>;
+    return (
+      <div className="status">
+        <strong>No LinkedIn account connected.</strong>
+        {status.provider === "mock" ? (
+          <p className="fine-print" style={{ marginTop: 6 }}>
+            Sandbox mode is active. Connect LinkedIn to run the local consent, callback, sync, analytics, and DNA flow.
+          </p>
+        ) : null}
+      </div>
+    );
   }
 
   return (
     <div className="status">
       <strong>{status.account.displayName || "LinkedIn account"}</strong>
       <p className="fine-print" style={{ marginTop: 6 }}>
-        Imported posts: {status.account.postsImported}
+        {status.provider === "mock" ? "Sandbox connection" : "Live connection"} - Imported posts: {status.account.postsImported}
         {status.account.lastSyncedAt ? ` - Last synced ${new Date(status.account.lastSyncedAt).toLocaleString()}` : ""}
       </p>
     </div>

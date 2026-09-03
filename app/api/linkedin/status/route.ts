@@ -2,7 +2,7 @@ import { handleRouteError, jsonOk } from "@/src/lib/api";
 import { requireUser } from "@/src/lib/auth/session";
 import { getContentDnaRecord } from "@/src/lib/db/dna";
 import { getLinkedInAccount } from "@/src/lib/db/linkedin";
-import { isLinkedInConfigured } from "@/src/lib/linkedin/config";
+import { getLinkedInProvider, isLinkedInConfigured } from "@/src/lib/linkedin/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +14,7 @@ export async function GET() {
 
     return jsonOk({
       status: {
+        provider: getLinkedInProvider(),
         configured: isLinkedInConfigured(),
         connected: Boolean(account),
         account,

@@ -1,4 +1,12 @@
 import { getLinkedInConfig } from "./config";
+import {
+  exchangeMockLinkedInCode,
+  getMockLinkedInAuthUrl,
+  getMockLinkedInPostAnalytics,
+  getMockLinkedInPosts,
+  getMockLinkedInProfileMetrics,
+  mockLinkedInProfile,
+} from "./mock";
 import type { LinkedInPostAnalytics } from "@/src/types/lucan";
 
 type LinkedInTokenResponse = {
@@ -50,6 +58,10 @@ export class LinkedInApiError extends Error {
 
 export function getLinkedInAuthUrl(state: string) {
   const config = getLinkedInConfig();
+  if (config.provider === "mock") {
+    return getMockLinkedInAuthUrl(config.baseUrl, state);
+  }
+
   const url = new URL("https://www.linkedin.com/oauth/v2/authorization");
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", config.clientId);
@@ -61,6 +73,10 @@ export function getLinkedInAuthUrl(state: string) {
 
 export async function exchangeCodeForToken(code: string): Promise<LinkedInTokenResponse> {
   const config = getLinkedInConfig();
+  if (config.provider === "mock") {
+    return exchangeMockLinkedInCode(code);
+  }
+
   const response = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -77,6 +93,10 @@ export async function exchangeCodeForToken(code: string): Promise<LinkedInTokenR
 }
 
 export async function getLinkedInProfile(accessToken: string): Promise<LinkedInProfile> {
+  if (getLinkedInConfig().provider === "mock") {
+    return mockLinkedInProfile;
+  }
+
   const response = await fetch("https://api.linkedin.com/v2/userinfo", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -86,6 +106,10 @@ export async function getLinkedInProfile(accessToken: string): Promise<LinkedInP
 
 export async function fetchLinkedInMemberPosts(accessToken: string, memberId: string, count = 15): Promise<LinkedInPost[]> {
   const config = getLinkedInConfig();
+  if (config.provider === "mock") {
+    return getMockLinkedInPosts(count);
+  }
+
   const url = new URL("https://api.linkedin.com/rest/posts");
   url.searchParams.set("q", "author");
   url.searchParams.set("author", `urn:li:person:${memberId}`);
@@ -126,6 +150,10 @@ export async function fetchLinkedInPostAnalytics(
   accessToken: string,
   posts: Pick<LinkedInPost, "urn">[],
 ): Promise<LinkedInPostAnalyticsResult[]> {
+  if (getLinkedInConfig().provider === "mock") {
+    return getMockLinkedInPostAnalytics(posts);
+  }
+
   const results: LinkedInPostAnalyticsResult[] = [];
 
   for (const post of posts) {
@@ -156,6 +184,10 @@ export async function fetchLinkedInPostAnalytics(
 }
 
 export async function fetchLinkedInProfileMetrics(accessToken: string, memberId: string): Promise<LinkedInProfileMetrics> {
+  if (getLinkedInConfig().provider === "mock") {
+    return getMockLinkedInProfileMetrics();
+  }
+
   const [followers, connections] = await Promise.all([
     readOptionalLinkedInResponse(fetchFollowerCount(accessToken)),
     readOptionalLinkedInResponse(fetchConnectionCount(accessToken, memberId)),

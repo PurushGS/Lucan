@@ -77,6 +77,7 @@ export type LinkedInDashboardAnalytics = {
 };
 
 export type LinkedInStatus = {
+  provider: "live" | "mock";
   configured: boolean;
   connected: boolean;
   account: LinkedInAccount | null;
