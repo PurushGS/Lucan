@@ -112,3 +112,8 @@ export type PostScore = {
   }>;
   findings: PostScoreFinding[];
 };
+
+export type RewriteResult = {
+  post: string;
+  changes: string[];
+};

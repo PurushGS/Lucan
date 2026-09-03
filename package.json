@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit",
     "db:push": "node --env-file=.env.local --import tsx scripts/push-schema.ts",
     "smoke:ai": "node --env-file=.env.local --import tsx scripts/smoke-ai.ts",
+    "smoke:rewrite": "node --env-file=.env.local --import tsx scripts/smoke-rewrite.ts",
     "smoke:pdf": "node --env-file=.env.local --import tsx scripts/smoke-pdf.ts"
   },
   "dependencies": {

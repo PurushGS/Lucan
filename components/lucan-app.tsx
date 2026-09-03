@@ -24,6 +24,7 @@ import type {
   LinkedInDashboardAnalytics,
   LinkedInStatus,
   PostScore,
+  RewriteResult,
   SourceType,
 } from "@/src/types/lucan";
 
@@ -262,6 +263,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
   const [error, setError] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [scoring, setScoring] = useState(false);
+  const [rewriting, setRewriting] = useState(false);
 
   const inputLabel = sourceType === "topic" ? "Topic" : sourceType === "youtube" ? "YouTube URL" : "Article URL";
 
@@ -340,6 +342,31 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
       setScoreModel(data.model ?? "");
     }
     setScoring(false);
+  }
+
+  async function rewriteWithScore() {
+    if (!draftContent.trim() || !score) return;
+    setRewriting(true);
+    setError("");
+    setStatus("Improving draft...");
+    const response = await fetch("/api/rewrite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post: draftContent, score }),
+    });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "Rewrite failed.");
+      setStatus("");
+    } else {
+      const rewrite = payload as RewriteResult;
+      setDraftContent(rewrite.post);
+      setResult((current) => (current ? { ...current, post: rewrite.post, notes: rewrite.changes } : current));
+      setScore(null);
+      setScoreModel("");
+      setStatus("Improved draft. Review and save when ready.");
+    }
+    setRewriting(false);
   }
 
   return (
@@ -429,6 +456,9 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
           </button>
           <button className="secondary-button" disabled={!draftContent || scoring} onClick={checkScore} type="button">
             <CheckCircle2 size={16} /> {scoring ? "Checking..." : "Check score"}
+          </button>
+          <button className="secondary-button" disabled={!score || rewriting} onClick={rewriteWithScore} type="button">
+            <Sparkles size={16} /> {rewriting ? "Improving..." : "Improve with score"}
           </button>
         </div>
         {score ? <ScorePanel model={scoreModel} score={score} /> : null}
@@ -794,6 +824,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
   const [busy, setBusy] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [scoring, setScoring] = useState(false);
+  const [rewriting, setRewriting] = useState(false);
   const [score, setScore] = useState<PostScore | null>(null);
   const [scoreModel, setScoreModel] = useState<string>("");
 
@@ -805,6 +836,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     setError("");
     setScore(null);
     setScoreModel("");
+    setRewriting(false);
   }, [draft]);
 
   async function save() {
@@ -878,6 +910,30 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     setScoring(false);
   }
 
+  async function rewriteWithScore() {
+    if (!content.trim() || !score) return;
+    setRewriting(true);
+    setError("");
+    setStatus("Improving draft...");
+    const response = await fetch("/api/rewrite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post: content, score }),
+    });
+    const payload = await readPayload(response);
+    if (!response.ok) {
+      setError(payload.error?.message ?? "Rewrite failed.");
+      setStatus("");
+    } else {
+      const rewrite = payload as RewriteResult;
+      setContent(rewrite.post);
+      setScore(null);
+      setScoreModel("");
+      setStatus(`Improved draft. ${rewrite.changes.join(" ")}`);
+    }
+    setRewriting(false);
+  }
+
   return (
     <div className="input-grid">
       <label className="field">
@@ -910,6 +966,9 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
         </button>
         <button className="secondary-button" disabled={scoring || content.length < 40} onClick={checkScore} type="button">
           <CheckCircle2 size={16} /> {scoring ? "Checking..." : "Check score"}
+        </button>
+        <button className="secondary-button" disabled={!score || rewriting} onClick={rewriteWithScore} type="button">
+          <Sparkles size={16} /> {rewriting ? "Improving..." : "Improve with score"}
         </button>
       </div>
       {status && <div className="status">{status}</div>}

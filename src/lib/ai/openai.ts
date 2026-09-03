@@ -41,14 +41,39 @@ export function getScoreModels() {
     : ["z-ai/glm-5.2:free", "z-ai/glm-5.3-flash"];
 }
 
+export function getRewriteModels() {
+  const configured =
+    process.env.OPENROUTER_REWRITE_MODELS || process.env.OPENROUTER_REWRITE_MODEL || process.env.OPENAI_REWRITE_MODEL;
+
+  return configured
+    ? configured
+        .split(",")
+        .map((model) => model.trim())
+        .filter(Boolean)
+    : ["z-ai/glm-5.3-flash", getModel()];
+}
+
 export function isRetryableAIError(error: unknown) {
+  if (error instanceof SyntaxError) return true;
+
   const status = typeof error === "object" && error !== null && "status" in error ? Number(error.status) : null;
-  return status === 429 || status === 502 || status === 503 || status === 504;
+  if (status === 429 || status === 502 || status === 503 || status === 504) return true;
+
+  if (!(error instanceof Error)) return false;
+
+  const message = error.message.toLowerCase();
+  const cause = error.cause instanceof Error ? error.cause.message.toLowerCase() : "";
+  return (
+    message.includes("connection error") ||
+    message.includes("terminated") ||
+    cause.includes("econnreset") ||
+    cause.includes("etimedout")
+  );
 }
 
 function getRequestTimeoutMs() {
-  const value = Number(process.env.AI_REQUEST_TIMEOUT_MS ?? 45_000);
-  return Number.isFinite(value) && value > 0 ? value : 45_000;
+  const value = Number(process.env.AI_REQUEST_TIMEOUT_MS ?? 30_000);
+  return Number.isFinite(value) && value > 0 ? value : 30_000;
 }
 
 export async function completeJson(prompt: string, options?: { model?: string; temperature?: number }) {

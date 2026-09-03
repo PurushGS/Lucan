@@ -1,4 +1,4 @@
-import type { ContentDnaProfile, GenerationResult, SourceType } from "@/src/types/lucan";
+import type { ContentDnaProfile, GenerationResult, PostScore, RewriteResult, SourceType } from "@/src/types/lucan";
 
 export function generationPrompt(input: {
   sourceType: SourceType;
@@ -117,5 +117,40 @@ Return only valid JSON in this exact shape:
     }
   ]
 }
+`;
+}
+
+export function rewritePrompt(input: { post: string; dna: ContentDnaProfile | null; score: PostScore | null }) {
+  const dnaText = input.dna
+    ? JSON.stringify(input.dna, null, 2)
+    : "No Content DNA saved yet. Improve human clarity without pretending to know the user's personal writing history.";
+
+  const scoreText = input.score
+    ? JSON.stringify(input.score, null, 2)
+    : "No score findings provided. Rewrite based on general LinkedIn clarity and authenticity.";
+
+  return `
+Rewrite this LinkedIn post using the score findings and Content DNA.
+
+Rules:
+- Preserve the core meaning.
+- Make the hook sharper without making it clickbait.
+- Remove generic, over-polished, or artificial lines.
+- Keep line breaks natural for LinkedIn.
+- Do not add fake numbers, fake stories, fake quotes, or unverifiable claims.
+- When Content DNA exists, align with its voice, topics, hook strategies, and avoid-list.
+- When Content DNA is missing, keep the post plain, specific, and human without imitating a made-up identity.
+
+Content DNA:
+${dnaText}
+
+Score findings:
+${scoreText}
+
+Current post:
+${input.post.slice(0, 16000)}
+
+Return only JSON matching this TypeScript type:
+type Result = ${JSON.stringify({ post: "Rewritten LinkedIn post", changes: ["Specific change made"] } satisfies RewriteResult)}
 `;
 }
