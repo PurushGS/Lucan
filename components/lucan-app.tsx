@@ -4,15 +4,21 @@ import {
   BarChart3,
   CalendarDays,
   CheckCircle2,
+  Clock3,
+  Columns3,
   FileText,
+  Flame,
   LayoutDashboard,
   Link2,
+  Lightbulb,
   LogOut,
   PenLine,
   Save,
   Send,
   Sparkles,
+  TrendingUp,
   UserRound,
+  UsersRound,
   Youtube,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -22,13 +28,25 @@ import type {
   ContentDnaRecord,
   Draft,
   LinkedInDashboardAnalytics,
+  LinkedInImportedPost,
   LinkedInStatus,
   PostScore,
   RewriteResult,
   SourceType,
 } from "@/src/types/lucan";
 
-type View = "dashboard" | "generator" | "drafts" | "calendar" | "analytics" | "dna" | "settings";
+type View =
+  | "dashboard"
+  | "generator"
+  | "drafts"
+  | "kanban"
+  | "calendar"
+  | "analytics"
+  | "dna"
+  | "inspiration"
+  | "viral"
+  | "influencers"
+  | "settings";
 
 export type AppNotice = {
   kind: "success" | "error";
@@ -51,6 +69,13 @@ type AnalyticsResponse = {
   sourceMix: Array<{ sourceType: string; count: number }>;
 };
 
+type PostingSlot = {
+  label: string;
+  detail: string;
+  score: number;
+  source: "linkedin" | "baseline";
+};
+
 const navGroups: Array<{
   label: string;
   items: Array<{ id: View; label: string; icon: React.ComponentType<{ size?: number }> }>;
@@ -61,6 +86,7 @@ const navGroups: Array<{
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
       { id: "generator", label: "Post Generator", icon: PenLine },
       { id: "drafts", label: "Drafts", icon: FileText },
+      { id: "kanban", label: "Kanban", icon: Columns3 },
       { id: "calendar", label: "Calendar", icon: CalendarDays },
     ],
   },
@@ -69,6 +95,9 @@ const navGroups: Array<{
     items: [
       { id: "analytics", label: "Analytics", icon: BarChart3 },
       { id: "dna", label: "Content DNA", icon: Sparkles },
+      { id: "inspiration", label: "Content Inspiration", icon: Lightbulb },
+      { id: "viral", label: "Viral Posts", icon: Flame },
+      { id: "influencers", label: "Influencers", icon: UsersRound },
     ],
   },
   {
@@ -205,9 +234,13 @@ export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | n
         {view === "dashboard" && <Dashboard analytics={analytics} drafts={drafts} dna={dna} linkedinStatus={linkedinStatus} setView={setView} />}
         {view === "generator" && <Generator dna={dna} onSaved={refresh} />}
         {view === "drafts" && <Drafts drafts={drafts} onUpdated={refresh} />}
-        {view === "calendar" && <Calendar drafts={drafts} setView={setView} />}
+        {view === "kanban" && <Kanban drafts={drafts} setView={setView} />}
+        {view === "calendar" && <Calendar analytics={analytics} drafts={drafts} setView={setView} />}
         {view === "analytics" && <Analytics analytics={analytics} />}
         {view === "dna" && <ContentDna dna={dna} dnaRecord={dnaRecord} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
+        {view === "inspiration" && <ContentInspiration analytics={analytics} setView={setView} />}
+        {view === "viral" && <ViralPosts analytics={analytics} setView={setView} />}
+        {view === "influencers" && <Influencers analytics={analytics} setView={setView} />}
         {view === "settings" && <Settings user={user} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
       </section>
     </main>
@@ -230,22 +263,38 @@ function Dashboard({
   const linkedin = analytics?.linkedin;
   const scheduledCount = drafts.filter((draft) => draft.status === "scheduled").length;
   const publishedCount = drafts.filter((draft) => draft.status === "published").length;
+  const bestSlots = getBestPostingSlots(linkedin);
 
   return (
     <>
-      <div className="dashboard-grid">
+      <div className="dashboard-grid metric-strip">
         <Metric label="Drafts" value={analytics?.drafts ?? 0} />
         <Metric label="Scheduled" value={scheduledCount} />
         <Metric label="Published" value={publishedCount} />
-        <Metric label="Generations" value={analytics?.generations ?? 0} />
         <Metric label="Content DNA" value={analytics?.hasDna ? "Ready" : "Pending"} />
         <Metric label="LinkedIn posts" value={linkedin?.account?.postsImported ?? 0} />
         <Metric label="Impressions" value={formatNumber(linkedin?.totals.impressions ?? 0)} />
       </div>
-      <div className="workspace-grid">
+      <div className="dashboard-layout">
         <section className="panel section">
-          <h2>Recent drafts</h2>
-          <DraftList drafts={drafts.slice(0, 4)} empty="No drafts saved yet." />
+          <div className="section-heading-row">
+            <h2>Recent drafts</h2>
+            <button className="ghost-button" onClick={() => setView("drafts")} type="button">
+              Open drafts
+            </button>
+          </div>
+          <CompactDraftGrid drafts={drafts.slice(0, 4)} empty="No drafts saved yet." />
+        </section>
+        <section className="panel section">
+          <div className="section-heading-row">
+            <h2>Best time to post</h2>
+            <Clock3 size={18} />
+          </div>
+          <BestTimeList slots={bestSlots} />
+          <button className="secondary-button full-width-action" onClick={() => setView("calendar")} type="button">
+            <CalendarDays size={16} />
+            Open calendar
+          </button>
         </section>
         <section className="panel section">
           <h2>Today</h2>
@@ -261,6 +310,10 @@ function Dashboard({
             <button className="secondary-button" onClick={() => setView("calendar")} type="button">
               <CalendarDays size={16} />
               Calendar
+            </button>
+            <button className="secondary-button" onClick={() => setView("kanban")} type="button">
+              <Columns3 size={16} />
+              Kanban
             </button>
             <p className="fine-print">
               {linkedinStatus?.connected
@@ -515,7 +568,61 @@ function Drafts({ drafts, onUpdated }: { drafts: Draft[]; onUpdated: () => Promi
   );
 }
 
-function Calendar({ drafts, setView }: { drafts: Draft[]; setView: (view: View) => void }) {
+function Kanban({ drafts, setView }: { drafts: Draft[]; setView: (view: View) => void }) {
+  const columns: Array<{ status: Draft["status"]; label: string; helper: string }> = [
+    { status: "draft", label: "Draft", helper: "Ideas being written" },
+    { status: "scheduled", label: "Scheduled", helper: "Ready for publishing" },
+    { status: "published", label: "Published", helper: "Live or marked complete" },
+  ];
+
+  return (
+    <section className="panel section">
+      <div className="section-heading-row">
+        <div>
+          <h2>Kanban board</h2>
+          <p className="fine-print">Status-grouped drafts. Publishing and scheduling still happen from the editor.</p>
+        </div>
+        <button className="primary-button" onClick={() => setView("generator")} type="button">
+          <PenLine size={16} />
+          New draft
+        </button>
+      </div>
+      <div className="kanban-board">
+        {columns.map((column) => {
+          const columnDrafts = drafts.filter((draft) => draft.status === column.status);
+          return (
+            <section className="kanban-column" key={column.status}>
+              <header>
+                <div>
+                  <strong>{column.label}</strong>
+                  <p className="fine-print">{column.helper}</p>
+                </div>
+                <span className={`badge ${column.status}`}>{columnDrafts.length}</span>
+              </header>
+              <div className="kanban-cards">
+                {columnDrafts.length ? (
+                  columnDrafts.map((draft) => <CompactDraftCard draft={draft} key={draft.id} />)
+                ) : (
+                  <div className="empty-state">No {column.label.toLowerCase()} posts yet.</div>
+                )}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function Calendar({
+  analytics,
+  drafts,
+  setView,
+}: {
+  analytics: AnalyticsResponse | null;
+  drafts: Draft[];
+  setView: (view: View) => void;
+}) {
   const scheduled = drafts
     .filter((draft) => draft.scheduledAt || draft.publishedAt)
     .sort((a, b) => {
@@ -523,36 +630,175 @@ function Calendar({ drafts, setView }: { drafts: Draft[]; setView: (view: View) 
       const right = b.scheduledAt ?? b.publishedAt ?? b.createdAt;
       return new Date(left).getTime() - new Date(right).getTime();
     });
+  const bestSlots = getBestPostingSlots(analytics?.linkedin);
+
+  return (
+    <div className="workspace-grid calendar-workspace">
+      <section className="panel section">
+        <div className="section-heading-row">
+          <div>
+            <h2>Best time to post</h2>
+            <p className="fine-print">Calculated from imported LinkedIn history when available.</p>
+          </div>
+          <Clock3 size={18} />
+        </div>
+        <BestTimeList slots={bestSlots} />
+      </section>
+      <section className="panel section">
+        <div className="section-heading-row">
+          <h2>Scheduled content</h2>
+          <button className="secondary-button" onClick={() => setView("drafts")} type="button">
+            Open drafts
+          </button>
+        </div>
+        {scheduled.length ? (
+          <div className="calendar-list">
+            {scheduled.map((draft) => (
+              <article className="calendar-row" key={draft.id}>
+                <div>
+                  <strong>{draft.title}</strong>
+                  <p className="fine-print">{shorten(draft.content, 180)}</p>
+                </div>
+                <div>
+                  <span className={`badge ${draft.status}`}>{draft.status}</span>
+                  <p className="fine-print" style={{ marginTop: 8 }}>
+                    {formatDraftDate(draft.scheduledAt ?? draft.publishedAt)}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="status">No scheduled or published posts yet.</div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function ContentInspiration({ analytics, setView }: { analytics: AnalyticsResponse | null; setView: (view: View) => void }) {
+  const posts = getTopLinkedInPosts(analytics?.linkedin, 6);
 
   return (
     <section className="panel section">
-      <h2>Calendar</h2>
-      {scheduled.length ? (
-        <div className="calendar-list">
-          {scheduled.map((draft) => (
-            <article className="calendar-row" key={draft.id}>
-              <div>
-                <strong>{draft.title}</strong>
-                <p className="fine-print">{shorten(draft.content, 180)}</p>
-              </div>
-              <div>
-                <span className={`badge ${draft.status}`}>{draft.status}</span>
-                <p className="fine-print" style={{ marginTop: 8 }}>
-                  {formatDraftDate(draft.scheduledAt ?? draft.publishedAt)}
-                </p>
+      <div className="section-heading-row">
+        <div>
+          <h2>Content inspiration</h2>
+          <p className="fine-print">Angles and hooks pulled from your imported LinkedIn posts.</p>
+        </div>
+        <button className="primary-button" onClick={() => setView("generator")} type="button">
+          <Sparkles size={16} />
+          Generate from idea
+        </button>
+      </div>
+      {posts.length ? (
+        <div className="inspiration-grid">
+          {posts.map((post) => (
+            <article className="insight-card" key={post.urn}>
+              <span className="insight-label">Imported post</span>
+              <h3>{deriveInspirationAngle(post.commentary)}</h3>
+              <p>{shorten(post.commentary, 260)}</p>
+              <div className="draft-meta">
+                <span>{post.publishedAt ? formatShortDate(post.publishedAt) : "No date"}</span>
+                <span>{formatNumber(getPostImpact(post))} impact</span>
               </div>
             </article>
           ))}
         </div>
       ) : (
-        <div className="status">
-          No scheduled or published posts yet.
-          <button className="secondary-button" onClick={() => setView("drafts")} style={{ marginTop: 12 }} type="button">
-            Open drafts
-          </button>
-        </div>
+        <RealDataEmptyState
+          actionLabel="Open Content DNA"
+          message="Sync LinkedIn posts to turn your actual content history into inspiration cards."
+          onAction={() => setView("dna")}
+          title="No imported posts yet"
+        />
       )}
     </section>
+  );
+}
+
+function ViralPosts({ analytics, setView }: { analytics: AnalyticsResponse | null; setView: (view: View) => void }) {
+  const posts = getTopLinkedInPosts(analytics?.linkedin, 10);
+
+  return (
+    <section className="panel section">
+      <div className="section-heading-row">
+        <div>
+          <h2>Viral posts</h2>
+          <p className="fine-print">Ranked from real imported post reach and engagement.</p>
+        </div>
+        <TrendingUp size={18} />
+      </div>
+      {posts.length ? (
+        <div className="viral-list">
+          {posts.map((post, index) => (
+            <article className="viral-row" key={post.urn}>
+              <strong>#{index + 1}</strong>
+              <div>
+                <p>{shorten(post.commentary, 260)}</p>
+                <div className="draft-meta">
+                  <span>{post.publishedAt ? formatShortDate(post.publishedAt) : "No date"}</span>
+                  <span>{formatNumber(post.analytics.impressions)} impressions</span>
+                  <span>{formatNumber(post.analytics.reactions + post.analytics.comments + post.analytics.reshares)} engagement</span>
+                  {!analytics?.linkedin.analyticsAvailable ? <span>analytics permission partial</span> : null}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <RealDataEmptyState
+          actionLabel="Sync LinkedIn"
+          message="Viral ranking needs your imported LinkedIn posts. No sample posts are shown here."
+          onAction={() => setView("dna")}
+          title="No real post history yet"
+        />
+      )}
+    </section>
+  );
+}
+
+function Influencers({ analytics, setView }: { analytics: AnalyticsResponse | null; setView: (view: View) => void }) {
+  const account = analytics?.linkedin.account;
+
+  return (
+    <div className="workspace-grid">
+      <section className="panel section">
+        <div className="section-heading-row">
+          <div>
+            <h2>Influencers</h2>
+            <p className="fine-print">A tracking surface for creators and competitors once a live source is connected.</p>
+          </div>
+          <UsersRound size={18} />
+        </div>
+        <div className="empty-state large">
+          <strong>No influencer source connected yet.</strong>
+          <p>
+            Lucan can show real tracked creators here after we add a source for public profile/post discovery. I am not filling this
+            with fake influencer rows.
+          </p>
+        </div>
+      </section>
+      <section className="panel section">
+        <h2>Connected context</h2>
+        {account ? (
+          <div className="status">
+            <strong>{account.displayName || "LinkedIn account"}</strong>
+            <p className="fine-print" style={{ marginTop: 6 }}>
+              Imported posts: {account.postsImported}
+              {account.lastSyncedAt ? ` - Last synced ${new Date(account.lastSyncedAt).toLocaleString()}` : ""}
+            </p>
+          </div>
+        ) : (
+          <RealDataEmptyState
+            actionLabel="Open settings"
+            message="Connect and sync LinkedIn first so this page can use your account context."
+            onAction={() => setView("settings")}
+            title="LinkedIn is not synced"
+          />
+        )}
+      </section>
+    </div>
   );
 }
 
@@ -1052,6 +1298,71 @@ function ScorePanel({ model, score }: { model: string; score: PostScore }) {
   );
 }
 
+function CompactDraftGrid({ drafts, empty }: { drafts: Draft[]; empty: string }) {
+  if (!drafts.length) return <div className="status">{empty}</div>;
+
+  return (
+    <div className="compact-draft-grid">
+      {drafts.map((draft) => (
+        <CompactDraftCard draft={draft} key={draft.id} />
+      ))}
+    </div>
+  );
+}
+
+function CompactDraftCard({ draft }: { draft: Draft }) {
+  return (
+    <article className="compact-draft-card">
+      <header>
+        <strong>{draft.title}</strong>
+        <span className={`badge ${draft.status}`}>{draft.status}</span>
+      </header>
+      <p>{draft.content}</p>
+      <div className="draft-meta">
+        <span>{draft.sourceType}</span>
+        {draft.scheduledAt ? <span>Scheduled {formatDraftDate(draft.scheduledAt)}</span> : null}
+        {draft.publishedAt ? <span>Published {formatDraftDate(draft.publishedAt)}</span> : null}
+      </div>
+    </article>
+  );
+}
+
+function BestTimeList({ slots }: { slots: PostingSlot[] }) {
+  return (
+    <div className="slot-grid">
+      {slots.map((slot) => (
+        <article className="slot-card" key={`${slot.label}-${slot.source}`}>
+          <span className={`slot-source ${slot.source}`}>{slot.source === "linkedin" ? "LinkedIn data" : "Baseline"}</span>
+          <strong>{slot.label}</strong>
+          <p>{slot.detail}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function RealDataEmptyState({
+  actionLabel,
+  message,
+  onAction,
+  title,
+}: {
+  actionLabel: string;
+  message: string;
+  onAction: () => void;
+  title: string;
+}) {
+  return (
+    <div className="empty-state large">
+      <strong>{title}</strong>
+      <p>{message}</p>
+      <button className="secondary-button" onClick={onAction} type="button">
+        {actionLabel}
+      </button>
+    </div>
+  );
+}
+
 function DraftList({
   drafts,
   empty,
@@ -1111,6 +1422,78 @@ function formatNumber(value: number) {
 
 function formatOptionalNumber(value: number | null | undefined) {
   return value === null || value === undefined ? "Not available" : formatNumber(value);
+}
+
+function getBestPostingSlots(linkedin: LinkedInDashboardAnalytics | null | undefined): PostingSlot[] {
+  const groups = new Map<string, { day: string; impact: number; posts: number; time: string }>();
+
+  for (const post of linkedin?.posts ?? []) {
+    if (!post.publishedAt) continue;
+    const date = new Date(post.publishedAt);
+    if (Number.isNaN(date.getTime())) continue;
+
+    const day = date.toLocaleDateString("en-US", { weekday: "short" });
+    const hour = new Date(date);
+    hour.setMinutes(0, 0, 0);
+    const time = hour.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const key = `${day}-${time}`;
+    const existing = groups.get(key) ?? { day, impact: 0, posts: 0, time };
+    existing.impact += getPostImpact(post);
+    existing.posts += 1;
+    groups.set(key, existing);
+  }
+
+  const measured = [...groups.values()]
+    .filter((slot) => slot.impact > 0)
+    .map((slot) => ({ ...slot, score: Math.round(slot.impact / Math.max(1, slot.posts)) }))
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 3);
+
+  if (measured.length) {
+    return measured.map((slot) => ({
+      label: `${slot.day} ${slot.time}`,
+      detail: `${slot.posts} imported post${slot.posts > 1 ? "s" : ""}, avg ${formatNumber(slot.score)} impact`,
+      score: slot.score,
+      source: "linkedin",
+    }));
+  }
+
+  return [
+    { label: "Tue 9:00 AM", detail: "Baseline slot until LinkedIn history is synced.", score: 0, source: "baseline" },
+    { label: "Wed 12:30 PM", detail: "Baseline slot until enough real post analytics exist.", score: 0, source: "baseline" },
+    { label: "Thu 5:30 PM", detail: "Baseline slot, not measured from your account yet.", score: 0, source: "baseline" },
+  ];
+}
+
+function getTopLinkedInPosts(linkedin: LinkedInDashboardAnalytics | null | undefined, limit: number) {
+  return [...(linkedin?.posts ?? [])]
+    .sort((left, right) => getPostImpact(right) - getPostImpact(left))
+    .slice(0, limit);
+}
+
+function getPostImpact(post: LinkedInImportedPost) {
+  return (
+    post.analytics.impressions +
+    post.analytics.membersReached +
+    post.analytics.reactions * 8 +
+    post.analytics.comments * 16 +
+    post.analytics.reshares * 20 +
+    post.analytics.saves * 12 +
+    post.analytics.linkClicks * 6
+  );
+}
+
+function deriveInspirationAngle(commentary: string) {
+  const firstLine = commentary
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .find(Boolean);
+  if (!firstLine) return "Revisit a proven topic";
+  return shorten(firstLine.replace(/^[-*#\s]+/, ""), 96);
+}
+
+function formatShortDate(value: string) {
+  return new Date(value).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function shorten(value: string, maxLength: number) {

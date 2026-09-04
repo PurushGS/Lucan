@@ -2,7 +2,7 @@
 
 Goal: let a logged-in user turn a topic, article, PDF, or YouTube link into a draft, score it, improve it, and save or publish it.
 
-Entry points: Dashboard primary action, Post Generator nav, Drafts editor.
+Entry points: Dashboard primary action, Post Generator nav, Drafts editor, Kanban board.
 
 Prerequisites: authenticated Logto session. Content DNA is optional but improves generation, scoring, and rewrite.
 
@@ -36,9 +36,21 @@ Panel: white ruled surface with 8px radius, 1px border, soft shadow only for mai
 
 Metric: compact data block for dashboard totals. Label uses utility styling; value is bold display text. Loading state may show zero or “Pending” but must not shift layout.
 
+DashboardOverview: first screen must be dense and useful, not a scroll-heavy feed. Use one metric strip, compact draft cards, best posting slots, and a short LinkedIn/DNA status. Recent drafts are cards with clamped content, not tall full-width boxes.
+
 SegmentedSourcePicker: four equal source options with icons. Active option uses teal border/fill. Keyboard path follows normal button tab order.
 
 DraftEditor: textarea is the dominant surface. Action order: Save draft, Schedule, Publish, Check score, Improve with score. Improve remains disabled until a score exists.
+
+KanbanBoard: three ruled columns for Draft, Scheduled, and Published. Cards are compact, clamped, and show source plus scheduled/published metadata. This can start as status-grouped rather than drag-and-drop; do not fake workflow transitions without backend support.
+
+CalendarPlanner: shows scheduled/published posts plus a best-time-to-post strip. Best-time slots derive from imported LinkedIn posts and analytics when available. If there is not enough real LinkedIn history, label the slots as baseline guidance, never as measured performance.
+
+ContentInspiration: uses the user’s imported LinkedIn posts as source material for reusable angles, hooks, and topics. Empty state asks the user to sync LinkedIn. No invented viral examples.
+
+ViralPosts: ranks imported LinkedIn posts by engagement and reach. Empty state is explicit when there are no imported posts or LinkedIn analytics are unavailable.
+
+Influencers: provides the future tracking surface without fake influencer rows. Until a source/API is connected, show a setup-required state and use the connected user profile as context only.
 
 ScorePanel: uses metrics, voice check, criteria, and finding list. Model label uses utility type. Findings show severity, reason, quoted line, and suggestion.
 
@@ -59,6 +71,7 @@ Design system: Radix primitives + semantic CSS tokens. Current implementation ca
 Acceptance criteria:
 - Implement exactly this spec. Theme the design system with our locked tokens; do not redesign or re-implement its components.
 - Dashboard, generator, drafts, calendar, analytics, DNA, and settings read as one product.
+- Kanban, Content Inspiration, Viral Posts, and Influencers are present in navigation and use real/imported data or honest empty states.
 - Primary actions are visually clear; secondary actions are subordinate.
 - No purple-blue glow, gradient text, nested cards, decorative blobs, or marketing hero layout.
 - Mobile layout has no overlapping text or controls.
