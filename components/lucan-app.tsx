@@ -51,14 +51,30 @@ type AnalyticsResponse = {
   sourceMix: Array<{ sourceType: string; count: number }>;
 };
 
-const navItems: Array<{ id: View; label: string; icon: React.ComponentType<{ size?: number }> }> = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "generator", label: "Post Generator", icon: PenLine },
-  { id: "drafts", label: "Drafts", icon: FileText },
-  { id: "calendar", label: "Calendar", icon: CalendarDays },
-  { id: "analytics", label: "Analytics", icon: BarChart3 },
-  { id: "dna", label: "Content DNA", icon: Sparkles },
-  { id: "settings", label: "Settings", icon: UserRound },
+const navGroups: Array<{
+  label: string;
+  items: Array<{ id: View; label: string; icon: React.ComponentType<{ size?: number }> }>;
+}> = [
+  {
+    label: "Create",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { id: "generator", label: "Post Generator", icon: PenLine },
+      { id: "drafts", label: "Drafts", icon: FileText },
+      { id: "calendar", label: "Calendar", icon: CalendarDays },
+    ],
+  },
+  {
+    label: "Learn",
+    items: [
+      { id: "analytics", label: "Analytics", icon: BarChart3 },
+      { id: "dna", label: "Content DNA", icon: Sparkles },
+    ],
+  },
+  {
+    label: "Workspace",
+    items: [{ id: "settings", label: "Settings", icon: UserRound }],
+  },
 ];
 
 const sourceOptions: Array<{ id: SourceType; label: string; icon: React.ComponentType<{ size?: number }> }> = [
@@ -124,7 +140,7 @@ export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | n
     void refresh();
   }, [refresh, view]);
 
-  const title = navItems.find((item) => item.id === view)?.label ?? "Lucan";
+  const title = navGroups.flatMap((group) => group.items).find((item) => item.id === view)?.label ?? "Lucan";
 
   return (
     <main className="app-shell">
@@ -134,20 +150,25 @@ export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | n
           <span>Lucan</span>
         </div>
         <nav className="side-nav" aria-label="Main navigation">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                className={`nav-button ${view === item.id ? "active" : ""}`}
-                key={item.id}
-                onClick={() => setView(item.id)}
-                type="button"
-              >
-                <Icon size={18} />
-                {item.label}
-              </button>
-            );
-          })}
+          {navGroups.map((group) => (
+            <div className="nav-group" key={group.label}>
+              <span className="nav-group-label">{group.label}</span>
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    className={`nav-button ${view === item.id ? "active" : ""}`}
+                    key={item.id}
+                    onClick={() => setView(item.id)}
+                    type="button"
+                  >
+                    <Icon size={18} />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
         <div className="sidebar-footer">
           <strong>{user.name || user.email || "Lucan user"}</strong>
@@ -162,7 +183,8 @@ export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | n
             <p>{view === "settings" ? "Account and integrations" : "Write, save, and learn from your content."}</p>
           </div>
           <div className="actions">
-            <button className="secondary-button" onClick={() => setView("generator")} type="button">
+            <button className="primary-button" onClick={() => setView("generator")} type="button">
+              <PenLine size={16} />
               New draft
             </button>
             <a className="ghost-button" href="/sign-out" style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
@@ -229,12 +251,15 @@ function Dashboard({
           <h2>Today</h2>
           <div className="input-grid">
             <button className="primary-button" onClick={() => setView("generator")} type="button">
+              <PenLine size={16} />
               Generate post
             </button>
             <button className="secondary-button" onClick={() => setView("dna")} type="button">
+              <Sparkles size={16} />
               {dna ? "View Content DNA" : "Connect LinkedIn"}
             </button>
             <button className="secondary-button" onClick={() => setView("calendar")} type="button">
+              <CalendarDays size={16} />
               Calendar
             </button>
             <p className="fine-print">
@@ -430,6 +455,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
 
           <div className="actions">
             <button className="primary-button" disabled={busy} onClick={generate} type="button">
+              <Sparkles size={16} />
               {busy ? "Working..." : "Generate"}
             </button>
             <span className="fine-print">{dna ? "LinkedIn DNA active" : "Connect LinkedIn to activate DNA"}</span>
@@ -799,7 +825,7 @@ function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="panel metric">
+    <div className="metric">
       <span>{label}</span>
       <strong>{value}</strong>
     </div>

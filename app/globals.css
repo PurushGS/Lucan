@@ -1,15 +1,19 @@
 :root {
   --ink: #10202a;
   --muted: #667985;
-  --line: #dce7eb;
+  --subtle: #8aa0ab;
+  --line: #d8e6e8;
   --surface: #ffffff;
-  --soft: #eef7f7;
+  --soft: #edf7f6;
+  --canvas: #f5fbfa;
   --teal: #039487;
   --teal-dark: #047168;
   --blue: #2166d1;
+  --success: #147b57;
   --amber: #c98618;
-  --rose: #c34863;
-  --shadow: 0 18px 50px rgba(18, 45, 59, 0.12);
+  --rose: #b6425b;
+  --shadow: 0 16px 48px rgba(16, 32, 42, 0.08);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -18,9 +22,9 @@
 
 body {
   margin: 0;
-  background: #f6faf9;
+  background: var(--canvas);
   color: var(--ink);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Geist, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 button,
@@ -32,6 +36,11 @@ select {
 
 button {
   cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease),
+    color 160ms var(--ease),
+    box-shadow 160ms var(--ease);
 }
 
 .auth-shell,
@@ -43,10 +52,7 @@ button {
   display: grid;
   place-items: center;
   padding: 24px;
-  background:
-    linear-gradient(120deg, rgba(3, 148, 135, 0.14), transparent 38%),
-    linear-gradient(240deg, rgba(33, 102, 209, 0.14), transparent 42%),
-    #f6faf9;
+  background: var(--canvas);
 }
 
 .auth-panel {
@@ -60,7 +66,7 @@ button {
 
 .auth-panel h1 {
   margin: 26px 0 14px;
-  font-size: clamp(34px, 6vw, 62px);
+  font-size: 52px;
   line-height: 0.96;
   letter-spacing: 0;
 }
@@ -102,17 +108,24 @@ button {
 .secondary-button,
 .ghost-button,
 .icon-button {
-  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
   border-radius: 8px;
   min-height: 42px;
 }
 
 .primary-button {
-  margin-top: 24px;
   padding: 0 18px;
   color: white;
   background: var(--teal);
   font-weight: 700;
+}
+
+.auth-panel .primary-button {
+  margin-top: 24px;
 }
 
 .primary-button:hover {
@@ -121,8 +134,9 @@ button {
 
 .secondary-button {
   padding: 0 16px;
-  background: #e8f2ff;
-  color: var(--blue);
+  border-color: rgba(33, 102, 209, 0.16);
+  background: #edf5ff;
+  color: #1b5bc1;
   font-weight: 700;
 }
 
@@ -142,7 +156,15 @@ button {
 
 .ghost-button,
 .icon-button {
-  background: #f0f6f7;
+  border-color: var(--line);
+  background: #f8fbfb;
+  color: var(--ink);
+}
+
+.secondary-button:hover,
+.ghost-button:hover,
+.icon-button:hover {
+  background: var(--soft);
   color: var(--ink);
 }
 
@@ -158,32 +180,46 @@ button {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
 }
 
 .sidebar {
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: 22px 16px;
+  padding: 24px 18px;
   border-right: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(14px);
+  background: #ffffff;
 }
 
 .side-nav {
   display: grid;
+  gap: 22px;
+  margin-top: 32px;
+}
+
+.nav-group {
+  display: grid;
   gap: 6px;
-  margin-top: 28px;
+}
+
+.nav-group-label {
+  padding: 0 12px 4px;
+  color: var(--subtle);
+  font-family: "IBM Plex Mono", SFMono-Regular, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .nav-button {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  min-height: 42px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 12px 0 16px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -195,7 +231,17 @@ button {
 .nav-button.active,
 .nav-button:hover {
   color: var(--ink);
-  background: #eaf4f3;
+  background: var(--soft);
+}
+
+.nav-button.active::before {
+  position: absolute;
+  left: 6px;
+  width: 3px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--teal);
+  content: "";
 }
 
 .sidebar-footer {
@@ -211,7 +257,7 @@ button {
 
 .main {
   min-width: 0;
-  padding: 24px;
+  padding: 28px;
 }
 
 .topbar {
@@ -219,12 +265,14 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 
 .topbar h1 {
   margin: 0;
-  font-size: 28px;
+  font-family: Satoshi, Avenir Next, ui-sans-serif, system-ui, sans-serif;
+  font-size: 30px;
+  line-height: 1.12;
   letter-spacing: 0;
 }
 
@@ -240,25 +288,25 @@ button {
   flex-wrap: wrap;
 }
 
-.actions .primary-button {
-  margin-top: 0;
-}
-
 .panel {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 8px 28px rgba(16, 32, 42, 0.06);
+  box-shadow: var(--shadow);
 }
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .metric {
-  padding: 18px;
+  min-height: 104px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfd;
 }
 
 .metric span {
@@ -271,12 +319,14 @@ button {
 .metric strong {
   display: block;
   margin-top: 10px;
-  font-size: 32px;
+  font-family: Satoshi, Avenir Next, ui-sans-serif, system-ui, sans-serif;
+  font-size: 30px;
+  line-height: 1;
 }
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
   gap: 18px;
   margin-top: 18px;
 }
@@ -286,12 +336,13 @@ button {
 }
 
 .section {
-  padding: 20px;
+  padding: 22px;
 }
 
 .section h2,
 .section h3 {
   margin: 0 0 14px;
+  font-family: Satoshi, Avenir Next, ui-sans-serif, system-ui, sans-serif;
   letter-spacing: 0;
 }
 
@@ -317,7 +368,7 @@ button {
 
 .segment.active {
   border-color: rgba(3, 148, 135, 0.45);
-  background: #e3f6f3;
+  background: var(--soft);
   color: var(--teal-dark);
 }
 
@@ -344,6 +395,14 @@ select {
   background: #fbfdfd;
   color: var(--ink);
   resize: vertical;
+}
+
+textarea:hover,
+input[type="url"]:hover,
+input[type="text"]:hover,
+input[type="datetime-local"]:hover,
+select:hover {
+  border-color: #bfd4d8;
 }
 
 textarea:focus,
@@ -388,7 +447,7 @@ select:focus {
 
 .status.success {
   border-color: rgba(3, 148, 135, 0.35);
-  color: var(--teal-dark);
+  color: var(--success);
   background: #eefbf8;
 }
 
@@ -466,6 +525,10 @@ select:focus {
   margin: 0;
   color: var(--ink);
   line-height: 1.5;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
 }
 
 .calendar-list {
@@ -527,7 +590,7 @@ select:focus {
   flex: 1;
   min-width: 20px;
   border-radius: 6px 6px 0 0;
-  background: linear-gradient(180deg, var(--blue), var(--teal));
+  background: var(--teal);
 }
 
 .table-wrap {
@@ -566,6 +629,8 @@ select:focus {
 
 .score-panel {
   margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 .score-grid {
@@ -602,6 +667,20 @@ select:focus {
   color: var(--ink);
 }
 
+:focus-visible {
+  outline: 3px solid rgba(3, 148, 135, 0.2);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -616,6 +695,11 @@ select:focus {
 
   .side-nav {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .nav-group {
+    align-content: start;
   }
 
   .sidebar-footer {
@@ -631,6 +715,14 @@ select:focus {
 }
 
 @media (max-width: 640px) {
+  .auth-panel {
+    padding: 28px;
+  }
+
+  .auth-panel h1 {
+    font-size: 36px;
+  }
+
   .main {
     padding: 16px;
   }
@@ -643,5 +735,17 @@ select:focus {
   .segmented,
   .side-nav {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .nav-group-label {
+    padding-left: 4px;
+  }
+
+  .nav-button {
+    padding-left: 12px;
+  }
+
+  .nav-button.active::before {
+    display: none;
   }
 }

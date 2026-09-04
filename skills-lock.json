@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-design-ui-ux": {
+      "source": "ulpi-io/skills",
+      "sourceType": "github",
+      "skillPath": "frontend-design-ui-ux/SKILL.md",
+      "computedHash": "8eae75d294447eac5fab6c8a31141d8ff74777ea1b7bc25aef93c93ed6e10e71"
+    }
+  }
+}
