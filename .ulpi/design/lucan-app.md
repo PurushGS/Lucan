@@ -24,6 +24,18 @@ Start -> LinkedIn connection status -> connect account or show account -> sync p
 States:
 Unconfigured live OAuth shows setup status. Sandbox mode says sandbox connection. Connected state shows account, imported count, and last sync. Partial permission state imports what is available and states which LinkedIn permission is missing.
 
+## Flow: Manage Account Settings
+
+Goal: let a signed-in user see the Logto-backed profile/login details Lucan has stored and update account security without Lucan handling raw passwords.
+
+Entry points: Settings nav.
+
+Path:
+Start -> Settings -> Profile and login details -> Edit profile / change email / change password -> Logto Account Center -> return to Settings.
+
+States:
+Profile shows the current stored Logto subject, email, display name, and avatar fallback. Missing fields show “Not set”. Security actions link to Logto-hosted Account Center pages. If Account Center is not enabled in Logto, Logto owns the setup error; Lucan should still keep the local profile visible.
+
 ## Component Specs
 
 AppShell: two-column product shell. Desktop uses fixed 248px sidebar and fluid main. Mobile stacks sidebar above main with two-column nav. One primary action appears in the topbar.
@@ -50,13 +62,13 @@ ContentInspiration: uses the user’s imported LinkedIn posts as source material
 
 ViralPosts: ranks imported LinkedIn posts by engagement and reach. Empty state is explicit when there are no imported posts or LinkedIn analytics are unavailable.
 
-Influencers: provides the future tracking surface without fake influencer rows. Until a source/API is connected, show a setup-required state and use the connected user profile as context only.
-
 ScorePanel: uses metrics, voice check, criteria, and finding list. Model label uses utility type. Findings show severity, reason, quoted line, and suggestion.
 
 LinkedInStatus: shows configuration, connection, and sync state in one status strip. Never imply live analytics are available when LinkedIn scopes are missing.
 
 AnalyticsTable: table-first, not card grid. Horizontal scroll on mobile. Numeric columns remain scannable.
+
+AccountSettings: two panels for profile/login and security. Profile/login details come from the stored Lucan user row synced from Logto claims. Password change uses a Logto Account Center link, not an inline password field.
 
 ## Accessibility
 
@@ -71,7 +83,9 @@ Design system: Radix primitives + semantic CSS tokens. Current implementation ca
 Acceptance criteria:
 - Implement exactly this spec. Theme the design system with our locked tokens; do not redesign or re-implement its components.
 - Dashboard, generator, drafts, calendar, analytics, DNA, and settings read as one product.
-- Kanban, Content Inspiration, Viral Posts, and Influencers are present in navigation and use real/imported data or honest empty states.
+- Kanban, Content Inspiration, and Viral Posts are present in navigation and use real/imported data or honest empty states.
+- Influencers is removed from phase scope.
+- Settings shows stored login/profile details and links to Logto account profile, email, and password management.
 - Primary actions are visually clear; secondary actions are subordinate.
 - No purple-blue glow, gradient text, nested cards, decorative blobs, or marketing hero layout.
 - Mobile layout has no overlapping text or controls.

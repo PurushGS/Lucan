@@ -18,7 +18,6 @@ import {
   Sparkles,
   TrendingUp,
   UserRound,
-  UsersRound,
   Youtube,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -45,7 +44,6 @@ type View =
   | "dna"
   | "inspiration"
   | "viral"
-  | "influencers"
   | "settings";
 
 export type AppNotice = {
@@ -97,7 +95,6 @@ const navGroups: Array<{
       { id: "dna", label: "Content DNA", icon: Sparkles },
       { id: "inspiration", label: "Content Inspiration", icon: Lightbulb },
       { id: "viral", label: "Viral Posts", icon: Flame },
-      { id: "influencers", label: "Influencers", icon: UsersRound },
     ],
   },
   {
@@ -124,8 +121,24 @@ const toneOptions = [
   "Passionate",
 ];
 
-export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | null; user: AppUser }) {
-  const [view, setView] = useState<View>("dashboard");
+export type AuthAccountLinks = {
+  email: string;
+  password: string;
+  profile: string;
+};
+
+export function LucanApp({
+  accountLinks,
+  initialNotice,
+  initialView = "dashboard",
+  user,
+}: {
+  accountLinks: AuthAccountLinks;
+  initialNotice: AppNotice | null;
+  initialView?: View;
+  user: AppUser;
+}) {
+  const [view, setView] = useState<View>(initialView);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [dna, setDna] = useState<ContentDnaProfile | null>(null);
@@ -240,8 +253,7 @@ export function LucanApp({ initialNotice, user }: { initialNotice: AppNotice | n
         {view === "dna" && <ContentDna dna={dna} dnaRecord={dnaRecord} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
         {view === "inspiration" && <ContentInspiration analytics={analytics} setView={setView} />}
         {view === "viral" && <ViralPosts analytics={analytics} setView={setView} />}
-        {view === "influencers" && <Influencers analytics={analytics} setView={setView} />}
-        {view === "settings" && <Settings user={user} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
+        {view === "settings" && <Settings accountLinks={accountLinks} user={user} linkedinStatus={linkedinStatus} onUpdated={refresh} />}
       </section>
     </main>
   );
@@ -758,50 +770,6 @@ function ViralPosts({ analytics, setView }: { analytics: AnalyticsResponse | nul
   );
 }
 
-function Influencers({ analytics, setView }: { analytics: AnalyticsResponse | null; setView: (view: View) => void }) {
-  const account = analytics?.linkedin.account;
-
-  return (
-    <div className="workspace-grid">
-      <section className="panel section">
-        <div className="section-heading-row">
-          <div>
-            <h2>Influencers</h2>
-            <p className="fine-print">A tracking surface for creators and competitors once a live source is connected.</p>
-          </div>
-          <UsersRound size={18} />
-        </div>
-        <div className="empty-state large">
-          <strong>No influencer source connected yet.</strong>
-          <p>
-            Lucan can show real tracked creators here after we add a source for public profile/post discovery. I am not filling this
-            with fake influencer rows.
-          </p>
-        </div>
-      </section>
-      <section className="panel section">
-        <h2>Connected context</h2>
-        {account ? (
-          <div className="status">
-            <strong>{account.displayName || "LinkedIn account"}</strong>
-            <p className="fine-print" style={{ marginTop: 6 }}>
-              Imported posts: {account.postsImported}
-              {account.lastSyncedAt ? ` - Last synced ${new Date(account.lastSyncedAt).toLocaleString()}` : ""}
-            </p>
-          </div>
-        ) : (
-          <RealDataEmptyState
-            actionLabel="Open settings"
-            message="Connect and sync LinkedIn first so this page can use your account context."
-            onAction={() => setView("settings")}
-            title="LinkedIn is not synced"
-          />
-        )}
-      </section>
-    </div>
-  );
-}
-
 function Analytics({ analytics }: { analytics: AnalyticsResponse | null }) {
   const max = useMemo(() => Math.max(1, ...(analytics?.sourceMix.map((item) => item.count) ?? [1])), [analytics]);
   const linkedin = analytics?.linkedin;
@@ -975,10 +943,12 @@ function ContentDna({
 }
 
 function Settings({
+  accountLinks,
   user,
   linkedinStatus,
   onUpdated,
 }: {
+  accountLinks: AuthAccountLinks;
   user: AppUser;
   linkedinStatus: LinkedInStatus | null;
   onUpdated: () => Promise<void>;
@@ -1009,8 +979,46 @@ function Settings({
   return (
     <div className="workspace-grid">
       <section className="panel section">
-        <h2>Profile</h2>
-        <p className="fine-print">{user.name || user.email}</p>
+        <div className="section-heading-row">
+          <h2>Profile and login</h2>
+          <a className="secondary-button as-link" href={accountLinks.profile}>
+            Edit profile
+          </a>
+        </div>
+        <div className="account-profile">
+          <span
+            aria-label="Profile picture"
+            className="profile-avatar"
+            style={user.picture ? { backgroundImage: `url("${user.picture}")` } : undefined}
+          >
+            {user.picture ? null : getInitials(user)}
+          </span>
+          <div>
+            <strong>{user.name || "Not set"}</strong>
+            <p className="fine-print">{user.email || "No email stored"}</p>
+          </div>
+        </div>
+        <div className="settings-list">
+          <AccountDetail label="User ID" value={user.id} />
+          <AccountDetail label="Display name" value={user.name || "Not set"} />
+          <AccountDetail label="Email" value={user.email || "Not set"} />
+          <AccountDetail label="Profile image" value={user.picture || "Not set"} />
+        </div>
+      </section>
+      <section className="panel section">
+        <h2>Security</h2>
+        <div className="settings-list">
+          <AccountDetail label="Identity provider" value="Logto" />
+          <AccountDetail label="Password" value="Managed by Logto" />
+        </div>
+        <div className="actions" style={{ marginTop: 14 }}>
+          <a className="primary-button as-link" href={accountLinks.password}>
+            Change password
+          </a>
+          <a className="secondary-button as-link" href={accountLinks.email}>
+            Change email
+          </a>
+        </div>
       </section>
       <section className="panel section">
         <h2>LinkedIn</h2>
@@ -1028,6 +1036,15 @@ function Settings({
         {status && <div className="status" style={{ marginTop: 12 }}>{status}</div>}
         {error && <div className="status error" style={{ marginTop: 12 }}>{error}</div>}
       </section>
+    </div>
+  );
+}
+
+function AccountDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="settings-row">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
@@ -1422,6 +1439,16 @@ function formatNumber(value: number) {
 
 function formatOptionalNumber(value: number | null | undefined) {
   return value === null || value === undefined ? "Not available" : formatNumber(value);
+}
+
+function getInitials(user: AppUser) {
+  const source = user.name || user.email || "Lucan user";
+  return source
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
 }
 
 function getBestPostingSlots(linkedin: LinkedInDashboardAnalytics | null | undefined): PostingSlot[] {
