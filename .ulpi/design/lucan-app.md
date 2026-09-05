@@ -31,10 +31,10 @@ Goal: let a signed-in user see the Logto-backed profile/login details Lucan has 
 Entry points: Settings nav.
 
 Path:
-Start -> Settings -> Profile and login details -> Edit profile / change email / change password -> Logto Account Center -> return to Settings.
+Start -> Settings -> Profile and login details -> Change password -> Logto reset-password flow -> return/sign in again.
 
 States:
-Profile shows the current stored Logto subject, email, display name, and avatar fallback. Missing fields show “Not set”. Security actions link to Logto-hosted Account Center pages. If Account Center is not enabled in Logto, Logto owns the setup error; Lucan should still keep the local profile visible.
+Profile shows the current stored Logto subject, email, display name, and avatar fallback. Missing fields show “Not set”. Password change links to Logto’s hosted reset-password flow, not an inline password field.
 
 ## Component Specs
 
@@ -68,7 +68,7 @@ LinkedInStatus: shows configuration, connection, and sync state in one status st
 
 AnalyticsTable: table-first, not card grid. Horizontal scroll on mobile. Numeric columns remain scannable.
 
-AccountSettings: two panels for profile/login and security. Profile/login details come from the stored Lucan user row synced from Logto claims. Password change uses a Logto Account Center link, not an inline password field.
+AccountSettings: two panels for profile/login and security. Profile/login details come from the stored Lucan user row synced from Logto claims. Password change uses Logto reset-password, not an inline password field.
 
 ## Accessibility
 
@@ -85,7 +85,7 @@ Acceptance criteria:
 - Dashboard, generator, drafts, calendar, analytics, DNA, and settings read as one product.
 - Kanban, Content Inspiration, and Viral Posts are present in navigation and use real/imported data or honest empty states.
 - Influencers is removed from phase scope.
-- Settings shows stored login/profile details and links to Logto account profile, email, and password management.
+- Settings shows stored login/profile details and links to Logto password reset.
 - Primary actions are visually clear; secondary actions are subordinate.
 - No purple-blue glow, gradient text, nested cards, decorative blobs, or marketing hero layout.
 - Mobile layout has no overlapping text or controls.

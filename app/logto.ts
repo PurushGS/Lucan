@@ -15,4 +15,5 @@ export const logtoConfig: LogtoNextConfig = {
   baseUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   cookieSecret: requiredEnv("LOGTO_COOKIE_SECRET"),
   cookieSecure: process.env.NODE_ENV === "production",
+  scopes: ["email"],
 };

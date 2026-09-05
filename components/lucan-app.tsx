@@ -122,9 +122,7 @@ const toneOptions = [
 ];
 
 export type AuthAccountLinks = {
-  email: string;
   password: string;
-  profile: string;
 };
 
 export function LucanApp({
@@ -981,9 +979,6 @@ function Settings({
       <section className="panel section">
         <div className="section-heading-row">
           <h2>Profile and login</h2>
-          <a className="secondary-button as-link" href={accountLinks.profile}>
-            Edit profile
-          </a>
         </div>
         <div className="account-profile">
           <span
@@ -1014,9 +1009,6 @@ function Settings({
         <div className="actions" style={{ marginTop: 14 }}>
           <a className="primary-button as-link" href={accountLinks.password}>
             Change password
-          </a>
-          <a className="secondary-button as-link" href={accountLinks.email}>
-            Change email
           </a>
         </div>
       </section>

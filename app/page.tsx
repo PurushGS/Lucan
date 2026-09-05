@@ -68,17 +68,8 @@ function isExpiredAuthError(error: unknown) {
 
 function buildAccountLinks(): AuthAccountLinks {
   return {
-    email: buildLogtoAccountUrl("email"),
-    password: buildLogtoAccountUrl("password"),
-    profile: buildLogtoAccountUrl("profile"),
+    password: "/forgot-password",
   };
-}
-
-function buildLogtoAccountUrl(path: "email" | "password" | "profile") {
-  const url = new URL(`/account/${path}`, logtoConfig.endpoint);
-  url.searchParams.set("redirect", `${logtoConfig.baseUrl}/?view=settings`);
-  url.searchParams.set("show_success", "true");
-  return url.toString();
 }
 
 function getAccountSuccessMessage(successType: string | undefined) {
