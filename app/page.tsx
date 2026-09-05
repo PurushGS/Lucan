@@ -1,5 +1,5 @@
 import { getLogtoContext } from "@logto/next/server-actions";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import { LucanApp } from "@/components/lucan-app";
 import { logtoConfig } from "@/app/logto";
 import { ensureUser } from "@/src/lib/db/users";
@@ -40,16 +40,22 @@ function Unauthenticated() {
         </div>
         <h1>Turn your inputs into sharp LinkedIn drafts.</h1>
         <p>Generate from a topic, article, PDF, or YouTube video, then save the best version into your draft board.</p>
-        <form
-          action={async () => {
-            "use server";
-            redirect("/sign-in");
-          }}
-        >
-          <button className="primary-button" type="submit">
-            Sign in
-          </button>
-        </form>
+        <div className="auth-actions">
+          <Link className="primary-button as-link" href="/sign-in">
+            Continue with email
+          </Link>
+          <div className="auth-provider-grid">
+            <Link className="secondary-button as-link" href="/sign-in?provider=google">
+              Continue with Google
+            </Link>
+            <Link className="secondary-button as-link" href="/sign-in?provider=linkedin">
+              Continue with LinkedIn
+            </Link>
+          </div>
+          <Link className="auth-link" href="/forgot-password">
+            Forgot password?
+          </Link>
+        </div>
       </section>
     </main>
   );

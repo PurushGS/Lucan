@@ -128,6 +128,33 @@ button {
   margin-top: 24px;
 }
 
+.auth-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.auth-actions .primary-button {
+  margin-top: 0;
+}
+
+.auth-provider-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.auth-link {
+  color: var(--teal-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
 .primary-button:hover {
   background: var(--teal-dark);
 }
@@ -962,6 +989,10 @@ select:focus {
   .segmented,
   .side-nav {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .auth-provider-grid {
+    grid-template-columns: 1fr;
   }
 
   .compact-draft-grid {
