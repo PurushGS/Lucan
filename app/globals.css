@@ -155,6 +155,10 @@ button {
   text-decoration: underline;
 }
 
+.auth-notice {
+  margin-top: 18px;
+}
+
 .primary-button:hover {
   background: var(--teal-dark);
 }

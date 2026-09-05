@@ -12,10 +12,10 @@ export default async function Home({
 }: {
   searchParams?: Promise<{ account?: string; linkedin?: string; message?: string; show_success?: string; view?: string }>;
 }) {
-  const context = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
+  const context = await getSafeLogtoContext();
 
   if (!context.isAuthenticated) {
-    return <Unauthenticated />;
+    return <Unauthenticated notice={context.expired ? "Your session expired. Sign in again." : undefined} />;
   }
 
   const user = await ensureUser(context);
@@ -43,6 +43,29 @@ export default async function Home({
   );
 }
 
+async function getSafeLogtoContext() {
+  try {
+    const context = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
+    return { ...context, expired: false };
+  } catch (error) {
+    if (isExpiredAuthError(error)) {
+      return { isAuthenticated: false, expired: true };
+    }
+    throw error;
+  }
+}
+
+function isExpiredAuthError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    ("code" in error || "name" in error || "message" in error) &&
+    ((error as { code?: unknown }).code === "ERR_JWT_EXPIRED" ||
+      (error as { name?: unknown }).name === "JWTExpired" ||
+      String((error as { message?: unknown }).message ?? "").includes("JWTExpired"))
+  );
+}
+
 function buildAccountLinks(): AuthAccountLinks {
   return {
     email: buildLogtoAccountUrl("email"),
@@ -65,7 +88,7 @@ function getAccountSuccessMessage(successType: string | undefined) {
   return "Account settings updated.";
 }
 
-function Unauthenticated() {
+function Unauthenticated({ notice }: { notice?: string }) {
   return (
     <main className="auth-shell">
       <section className="auth-panel">
@@ -75,6 +98,7 @@ function Unauthenticated() {
         </div>
         <h1>Turn your inputs into sharp LinkedIn drafts.</h1>
         <p>Generate from a topic, article, PDF, or YouTube video, then save the best version into your draft board.</p>
+        {notice ? <div className="status error auth-notice">{notice}</div> : null}
         <div className="auth-actions">
           <Link className="primary-button as-link" href="/sign-in">
             Continue with email
