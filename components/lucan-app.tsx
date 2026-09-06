@@ -192,7 +192,7 @@ export function LucanApp({
     <main className="app-shell">
       <aside className="sidebar">
         <div className="brand-row">
-          <Image alt="" className="brand-logo" height={36} priority src="/brand/reachcraft-mark.svg" width={36} />
+          <Image alt="" className="brand-logo" height={44} priority src="/brand/reachcraft-mark.svg" width={44} />
           <span>Reachcraft</span>
         </div>
         <nav className="side-nav" aria-label="Main navigation">

@@ -83,7 +83,7 @@ function Unauthenticated({ notice }: { notice?: string }) {
     <main className="auth-shell">
       <section className="auth-panel">
         <div className="brand-row">
-          <Image alt="" className="brand-logo" height={36} priority src="/brand/reachcraft-mark.svg" width={36} />
+          <Image alt="" className="brand-logo" height={44} priority src="/brand/reachcraft-mark.svg" width={44} />
           <span>Reachcraft</span>
         </div>
         <h1>Turn your inputs into sharp LinkedIn drafts.</h1>
