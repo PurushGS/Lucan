@@ -72,6 +72,8 @@ export async function rewritePost(input: { post: string; dna: ContentDnaProfile 
 
 export async function generateCarouselContent(input: {
   source: string;
+  templateInspiration: string;
+  contentData: string;
   dna: ContentDnaProfile | null;
   slideCount: number;
   templateName: string;

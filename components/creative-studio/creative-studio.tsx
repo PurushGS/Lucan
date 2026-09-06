@@ -3,6 +3,7 @@
 import { Download, FileImage, Layers3, Loader2, Save, Sparkles, Trash2 } from "lucide-react";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { createCreativeDocument, creativeFormats, creativeTemplates, getCreativeTemplate } from "@/src/lib/creative/templates";
+import { getUserFacingError, getUserFacingException } from "@/src/lib/friendly-errors";
 import type { CreativeDesign, CreativeDocument, CreativeElement, CreativePage, CreativeTemplateKind } from "@/src/types/lucan";
 
 type CreativeResponse = {
@@ -34,6 +35,8 @@ export function CreativeStudio() {
   const [designs, setDesigns] = useState<CreativeDesign[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState(creativeTemplates[0].id);
   const [source, setSource] = useState("");
+  const [templateInspiration, setTemplateInspiration] = useState("");
+  const [contentData, setContentData] = useState("");
   const [slideCount, setSlideCount] = useState(5);
   const [title, setTitle] = useState("Untitled visual");
   const [designId, setDesignId] = useState<string | null>(null);
@@ -68,12 +71,12 @@ export function CreativeStudio() {
     const response = await fetch("/api/creative/carousel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ source, templateId: selectedTemplateId, slideCount }),
+      body: JSON.stringify({ source, templateInspiration, contentData, templateId: selectedTemplateId, slideCount }),
     });
     const payload = await readPayload(response);
 
     if (!response.ok) {
-      setError(payload.error?.message ?? "Creative generation failed.");
+      setError(getUserFacingError(payload, "Could not create the design. Please check the inputs and try again."));
       setStatus("");
       setLoading(false);
       return;
@@ -132,7 +135,7 @@ export function CreativeStudio() {
     const payload = await readPayload(response);
 
     if (!response.ok) {
-      setError(payload.error?.message ?? "Save failed.");
+      setError(getUserFacingError(payload, "Could not save this design. Please try again."));
     } else {
       if (!designId && typeof payload.id === "string") setDesignId(payload.id);
       setStatus("Saved to Creative Studio.");
@@ -146,7 +149,7 @@ export function CreativeStudio() {
     const response = await fetch(`/api/creative/designs/${id}`, { method: "DELETE" });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Delete failed.");
+      setError(getUserFacingError(payload, "Could not delete this design. Please try again."));
       return;
     }
     if (designId === id) setDesignId(null);
@@ -234,7 +237,7 @@ export function CreativeStudio() {
       link.click();
       setStatus("PNG exported.");
     } catch (exportError) {
-      setError(exportError instanceof Error ? exportError.message : "Export failed.");
+      setError(getUserFacingException(exportError, "Could not export this page. Please try again."));
     }
     setExporting(false);
   }
@@ -261,12 +264,32 @@ export function CreativeStudio() {
         </div>
 
         <label className="field">
-          <span>Source idea or draft</span>
+          <span>Topic or draft</span>
           <textarea
             onChange={(event) => setSource(event.target.value)}
             placeholder="Paste a post draft or describe the carousel you want."
-            rows={6}
+            rows={4}
             value={source}
+          />
+        </label>
+
+        <label className="field">
+          <span>Template inspiration</span>
+          <textarea
+            onChange={(event) => setTemplateInspiration(event.target.value)}
+            placeholder="Paste a slide outline, template notes, or design inspiration you want Lucan to adapt."
+            rows={4}
+            value={templateInspiration}
+          />
+        </label>
+
+        <label className="field">
+          <span>Content and data</span>
+          <textarea
+            onChange={(event) => setContentData(event.target.value)}
+            placeholder="Paste the stats, bullet points, story, offer details, or raw material that must appear in the design."
+            rows={4}
+            value={contentData}
           />
         </label>
 

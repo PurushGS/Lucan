@@ -164,6 +164,8 @@ type Result = ${JSON.stringify({ post: "Rewritten LinkedIn post", changes: ["Spe
 
 export function carouselPrompt(input: {
   source: string;
+  templateInspiration: string;
+  contentData: string;
   dna: ContentDnaProfile | null;
   slideCount: number;
   templateName: string;
@@ -181,6 +183,10 @@ Rules:
 - Avoid generic filler, fake numbers, fake quotes, and unverifiable claims.
 - Make the carousel useful even without visuals.
 - Match the selected template: ${input.templateName}.
+- Use template inspiration as design direction: structure, slide rhythm, visual hierarchy, and style cues.
+- Do not copy protected wording, logos, screenshots, or brand assets from inspiration. Transform the idea into an original Lucan design.
+- Treat content/data as the factual source of truth. Preserve supplied numbers, names, examples, and claims accurately.
+- If the user gives inspiration but little data, produce a reusable template-like carousel with placeholders that are easy to edit.
 - When Content DNA is available, use it as global writing context for voice, topics, rhythm, and avoid-list.
 - When Content DNA is missing, do not invent a personal identity.
 - Keep each headline under 75 characters and each body under 180 characters.
@@ -190,6 +196,12 @@ ${dnaText}
 
 Source:
 ${input.source.slice(0, 16000)}
+
+Template inspiration:
+${input.templateInspiration.slice(0, 12000) || "None provided."}
+
+Content and data to include:
+${input.contentData.slice(0, 12000) || "None provided."}
 
 Return only JSON matching this TypeScript type:
 type Result = ${JSON.stringify({

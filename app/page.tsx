@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LucanApp } from "@/components/lucan-app";
 import { logtoConfig } from "@/app/logto";
 import { ensureUser } from "@/src/lib/db/users";
+import { getUserFacingError } from "@/src/lib/friendly-errors";
 import type { AppNotice, AuthAccountLinks } from "@/components/lucan-app";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,14 @@ export default async function Home({
     : params?.message
       ? {
           kind: params.linkedin === "connected" ? "success" : "error",
-          message: params.message,
+          message: getUserFacingError(
+            { error: { message: params.message } },
+            params.linkedin === "connected"
+              ? "LinkedIn connected."
+              : params.linkedin
+                ? "LinkedIn could not finish connecting. Please try again."
+                : "Something went wrong. Please try again.",
+          ),
         }
       : null;
   const initialView = params?.view === "settings" ? "settings" : "dashboard";

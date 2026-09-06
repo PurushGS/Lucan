@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CreativeStudio } from "@/components/creative-studio/creative-studio";
+import { getUserFacingError } from "@/src/lib/friendly-errors";
 import type {
   AppUser,
   ContentDnaProfile,
@@ -377,7 +378,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     const payload = await readPayload(response);
 
     if (!response.ok) {
-      setError(payload.error?.message ?? "Generation failed.");
+      setError(getUserFacingError(payload, "Could not generate a post. Please check the source and try again."));
       setStatus("");
       setBusy(false);
       return;
@@ -409,7 +410,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     const payload = await readPayload(response);
 
     if (!response.ok) {
-      setError(payload.error?.message ?? "Draft save failed.");
+      setError(getUserFacingError(payload, "Could not save the draft. Please try again."));
     } else {
       setStatus("Saved to drafts");
       await onSaved();
@@ -428,7 +429,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Score check failed.");
+      setError(getUserFacingError(payload, "Could not check the score. Please try again."));
     } else {
       const data = payload as { score: PostScore; model?: string };
       setScore(data.score);
@@ -449,7 +450,7 @@ function Generator({ dna, onSaved }: { dna: ContentDnaProfile | null; onSaved: (
     });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Rewrite failed.");
+      setError(getUserFacingError(payload, "Could not improve the draft. Please try again."));
       setStatus("");
     } else {
       const rewrite = payload as RewriteResult;
@@ -887,7 +888,7 @@ function ContentDna({
     const payload = await readPayload(response);
 
     if (!response.ok) {
-      setError(payload.error?.message ?? "Content DNA failed.");
+      setError(getUserFacingError(payload, "Could not sync Content DNA. Please try again."));
       setStatus("");
     } else {
       setStatus(
@@ -967,7 +968,7 @@ function Settings({
     const response = await fetch("/api/linkedin/sync", { method: "POST" });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "LinkedIn sync failed.");
+      setError(getUserFacingError(payload, "Could not sync LinkedIn. Please try again."));
     } else {
       setStatus(
         typeof payload.analyticsError === "string"
@@ -1051,10 +1052,9 @@ function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
   if (!status.configured) {
     return (
       <div className="status">
-        <strong>LinkedIn OAuth is not configured yet.</strong>
+        <strong>LinkedIn connection is not ready yet.</strong>
         <p className="fine-print" style={{ marginTop: 6 }}>
-          Add LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET to .env.local, set the LinkedIn redirect URL to
-          http://localhost:3002/api/linkedin/callback, then restart the local server.
+          Ask the workspace admin to finish LinkedIn setup. Once it is ready, you can connect your account and sync Content DNA.
         </p>
       </div>
     );
@@ -1135,7 +1135,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Draft update failed.");
+      setError(getUserFacingError(payload, "Could not update the draft. Please try again."));
     } else {
       setStatus("Draft saved");
       await onUpdated();
@@ -1154,7 +1154,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Schedule failed.");
+      setError(getUserFacingError(payload, "Could not schedule this draft. Please try again."));
     } else {
       setStatus("Draft scheduled");
       await onUpdated();
@@ -1168,7 +1168,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     const response = await fetch(`/api/drafts/${draft.id}/publish`, { method: "POST" });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Publish failed.");
+      setError(getUserFacingError(payload, "Could not publish to LinkedIn. Please try again."));
     } else {
       const urn = (payload.linkedin as { urn?: string } | undefined)?.urn;
       setStatus(urn ? `Published to LinkedIn: ${urn}` : "Published to LinkedIn");
@@ -1187,7 +1187,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Score check failed.");
+      setError(getUserFacingError(payload, "Could not check the score. Please try again."));
     } else {
       const data = payload as { score: PostScore; model?: string };
       setScore(data.score);
@@ -1208,7 +1208,7 @@ function DraftEditor({ draft, onUpdated }: { draft: Draft; onUpdated: () => Prom
     });
     const payload = await readPayload(response);
     if (!response.ok) {
-      setError(payload.error?.message ?? "Rewrite failed.");
+      setError(getUserFacingError(payload, "Could not improve the draft. Please try again."));
       setStatus("");
     } else {
       const rewrite = payload as RewriteResult;

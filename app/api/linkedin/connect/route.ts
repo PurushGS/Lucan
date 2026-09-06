@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (error instanceof LinkedInSetupError) {
       const destination = new URL("/", request.url);
       destination.searchParams.set("linkedin", "setup");
-      destination.searchParams.set("message", error.message);
+      destination.searchParams.set("message", "LinkedIn connection is not ready yet. Ask the workspace admin to finish setup.");
       return NextResponse.redirect(destination);
     }
 

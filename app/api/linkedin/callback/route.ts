@@ -46,8 +46,16 @@ export async function GET(request: NextRequest) {
     destination.searchParams.set("message", "LinkedIn connected. Run sync to import posts, analytics, and rebuild Content DNA.");
   } catch (error) {
     destination.searchParams.set("linkedin", "error");
-    destination.searchParams.set("message", error instanceof Error ? error.message : "LinkedIn connection failed.");
+    destination.searchParams.set("message", getLinkedInConnectionMessage(error));
   }
 
   return NextResponse.redirect(destination);
+}
+
+function getLinkedInConnectionMessage(error: unknown) {
+  if (error instanceof Error && /access_denied|cancel/i.test(error.message)) {
+    return "LinkedIn connection was cancelled.";
+  }
+
+  return "LinkedIn could not finish connecting. Please check setup and try again.";
 }
