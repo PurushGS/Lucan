@@ -277,7 +277,7 @@ export function CreativeStudio() {
           <span>Template inspiration</span>
           <textarea
             onChange={(event) => setTemplateInspiration(event.target.value)}
-            placeholder="Paste a slide outline, template notes, or design inspiration you want Lucan to adapt."
+            placeholder="Paste a slide outline, template notes, or design inspiration you want Reachcraft to adapt."
             rows={4}
             value={templateInspiration}
           />
@@ -501,7 +501,7 @@ async function readPayload(response: Response) {
 }
 
 function slugify(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "lucan-creative";
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "reachcraft-creative";
 }
 
 function humanizeElementId(id: string) {

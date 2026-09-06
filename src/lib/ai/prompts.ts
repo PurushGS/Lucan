@@ -20,7 +20,7 @@ export function generationPrompt(input: {
     : "No Content DNA saved yet. Write plainly and avoid pretending to know the user's personal style.";
 
   return `
-You are Lucan, a LinkedIn writing assistant for thoughtful builders, operators, and educators.
+You are Reachcraft, a LinkedIn writing assistant for thoughtful builders, operators, and educators.
 Create one original LinkedIn post from the supplied ${input.sourceType}.
 
 Writing constraints:
@@ -175,7 +175,7 @@ export function carouselPrompt(input: {
     : "No Content DNA saved yet. Keep the carousel plain, specific, and human without pretending to know the user's personal style.";
 
   return `
-Create LinkedIn carousel slide copy for Lucan Creative Studio.
+Create LinkedIn carousel slide copy for Reachcraft Creative Studio.
 
 Rules:
 - Generate ${input.slideCount} slides.
@@ -184,7 +184,7 @@ Rules:
 - Make the carousel useful even without visuals.
 - Match the selected template: ${input.templateName}.
 - Use template inspiration as design direction: structure, slide rhythm, visual hierarchy, and style cues.
-- Do not copy protected wording, logos, screenshots, or brand assets from inspiration. Transform the idea into an original Lucan design.
+- Do not copy protected wording, logos, screenshots, or brand assets from inspiration. Transform the idea into an original Reachcraft design.
 - Treat content/data as the factual source of truth. Preserve supplied numbers, names, examples, and claims accurately.
 - If the user gives inspiration but little data, produce a reusable template-like carousel with placeholders that are easy to edit.
 - When Content DNA is available, use it as global writing context for voice, topics, rhythm, and avoid-list.

@@ -147,7 +147,7 @@ function createElementsForTemplate(
 ): CreativeElement[] {
   const base: CreativeElement[] = [
     shape("top-rule", 80, 90, width - 160, 10, template.accent, 10),
-    text("brand", "Lucan", 80, height - 110, 180, 40, 28, "#667985", 700),
+    text("brand", "Reachcraft", 80, height - 110, 220, 40, 28, "#667985", 700),
     text("page", `${index + 1}/${total}`, width - 190, height - 110, 110, 40, 28, "#667985", 700),
   ];
 
@@ -194,7 +194,7 @@ function createElementsForTemplate(
       shape("frame", 70, 70, width - 140, height - 140, "#10202a", 24),
       text("quote", slide.headline, 140, 210, width - 280, 430, 76, "#ffffff", 800),
       text("body", slide.body, 145, 720, width - 290, 180, 38, "#d8e6e8", 600),
-      text("brand", "Lucan", 140, height - 150, 180, 40, 28, "#8aa0ab", 700),
+      text("brand", "Reachcraft", 140, height - 150, 220, 40, 28, "#8aa0ab", 700),
       text("page", `${index + 1}/${total}`, width - 250, height - 150, 120, 40, 28, "#8aa0ab", 700),
     ];
   }
@@ -217,7 +217,7 @@ function createElementsForTemplate(
       text("label", "LINKEDIN VISUAL", 80, 90, 380, 40, 28, "#ffffff", 800),
       text("headline", slide.headline, 80, 370, width - 160, 280, 74, "#10202a", 800),
       text("body", slide.body, 84, 720, width - 168, 180, 38, "#667985", 600),
-      text("brand", "Lucan", 80, height - 110, 180, 40, 28, "#667985", 700),
+      text("brand", "Reachcraft", 80, height - 110, 220, 40, 28, "#667985", 700),
     ];
   }
 

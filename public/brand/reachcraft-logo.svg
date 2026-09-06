@@ -1,0 +1,14 @@
+<svg width="980" height="260" viewBox="0 0 980 260" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Reachcraft logo</title>
+  <desc id="desc">Reachcraft wordmark with a teal and blue reach mark.</desc>
+  <rect x="24" y="30" width="200" height="200" rx="46" fill="#10202A"/>
+  <path d="M75 171V82H123C146 82 160 95 160 115C160 130 153 140 140 146L166 171H138L116 149H99V171H75Z" fill="#F8FCFD"/>
+  <path d="M99 129H120C130 129 136 124 136 116C136 108 130 103 120 103H99V129Z" fill="#10202A"/>
+  <path d="M75 171V82H123C146 82 160 95 160 115C160 130 153 140 140 146L166 171H138L116 149H99V171H75Z" stroke="#F8FCFD" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M86 159C116 156 143 141 165 115C175 104 182 92 188 79" stroke="#09A596" stroke-width="11" stroke-linecap="round"/>
+  <path d="M143 140C152 133 159 126 165 115C171 103 175 91 188 79" stroke="#2D7BE8" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="188" cy="79" r="11" fill="#F8FCFD"/>
+  <circle cx="188" cy="79" r="5" fill="#2D7BE8"/>
+  <text x="265" y="151" fill="#10202A" font-family="Inter, Geist, Arial, sans-serif" font-size="76" font-weight="800" letter-spacing="0">Reachcraft</text>
+  <text x="270" y="195" fill="#667985" font-family="Inter, Geist, Arial, sans-serif" font-size="24" font-weight="650" letter-spacing="0">Content that sounds like you and reaches further</text>
+</svg>

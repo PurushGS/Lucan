@@ -24,11 +24,11 @@ export default async function MockLinkedInConsent({
         </div>
         <h1>Connect your LinkedIn account.</h1>
         <p>
-          Lucan will import recent posts and analytics to build Content DNA. This local sandbox mimics the production
+          Reachcraft will import recent posts and analytics to build Content DNA. This local sandbox mimics the production
           OAuth flow without creating the final LinkedIn developer app yet.
         </p>
         <div className="mock-permissions">
-          <strong>Lucan can access:</strong>
+          <strong>Reachcraft can access:</strong>
           <ul className="plain-list">
             <li>Your basic LinkedIn profile</li>
             <li>Recent LinkedIn posts for DNA</li>
@@ -37,7 +37,7 @@ export default async function MockLinkedInConsent({
         </div>
         <div className="actions" style={{ marginTop: 24 }}>
           <Link className="primary-button as-link" href={authorizeUrl}>
-            Authorize Lucan
+            Authorize Reachcraft
           </Link>
           <Link className="ghost-button as-link" href="/?linkedin=error&message=LinkedIn%20connection%20cancelled.">
             Cancel

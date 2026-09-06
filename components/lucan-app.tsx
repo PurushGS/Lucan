@@ -21,6 +21,7 @@ import {
   UserRound,
   Youtube,
 } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CreativeStudio } from "@/components/creative-studio/creative-studio";
 import { getUserFacingError } from "@/src/lib/friendly-errors";
@@ -185,14 +186,14 @@ export function LucanApp({
     void refresh();
   }, [refresh, view]);
 
-  const title = navGroups.flatMap((group) => group.items).find((item) => item.id === view)?.label ?? "Lucan";
+  const title = navGroups.flatMap((group) => group.items).find((item) => item.id === view)?.label ?? "Reachcraft";
 
   return (
     <main className="app-shell">
       <aside className="sidebar">
         <div className="brand-row">
-          <span className="brand-mark">L</span>
-          <span>Lucan</span>
+          <Image alt="" className="brand-logo" height={36} priority src="/brand/reachcraft-mark.svg" width={36} />
+          <span>Reachcraft</span>
         </div>
         <nav className="side-nav" aria-label="Main navigation">
           {navGroups.map((group) => (
@@ -216,7 +217,7 @@ export function LucanApp({
           ))}
         </nav>
         <div className="sidebar-footer">
-          <strong>{user.name || user.email || "Lucan user"}</strong>
+          <strong>{user.name || user.email || "Reachcraft user"}</strong>
           <span style={{ display: "block", marginTop: 4 }}>Local workspace</span>
         </div>
       </aside>
@@ -1439,7 +1440,7 @@ function formatOptionalNumber(value: number | null | undefined) {
 }
 
 function getInitials(user: AppUser) {
-  const source = user.name || user.email || "Lucan user";
+  const source = user.name || user.email || "Reachcraft user";
   return source
     .split(/[\s@._-]+/)
     .filter(Boolean)

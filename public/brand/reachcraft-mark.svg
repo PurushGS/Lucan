@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Reachcraft mark</title>
+  <desc id="desc">A teal and blue R mark with an upward reach curve.</desc>
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="#10202A"/>
+  <path d="M145 361V151H256C309 151 342 181 342 229C342 263 325 287 296 299L356 361H292L240 306H201V361H145Z" fill="#F8FCFD"/>
+  <path d="M201 259H249C273 259 287 248 287 229C287 210 273 199 249 199H201V259Z" fill="#10202A"/>
+  <path d="M145 361V151H256C309 151 342 181 342 229C342 263 325 287 296 299L356 361H292L240 306H201V361H145Z" stroke="#F8FCFD" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M173 334C242 326 304 292 355 232C377 206 395 178 408 147" stroke="#09A596" stroke-width="24" stroke-linecap="round"/>
+  <path d="M304 291C325 276 342 259 355 232C368 205 379 177 408 147" stroke="#2D7BE8" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="409" cy="147" r="25" fill="#F8FCFD"/>
+  <circle cx="409" cy="147" r="12" fill="#2D7BE8"/>
+</svg>

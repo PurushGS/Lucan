@@ -1,4 +1,5 @@
 import { getLogtoContext } from "@logto/next/server-actions";
+import Image from "next/image";
 import Link from "next/link";
 import { LucanApp } from "@/components/lucan-app";
 import { logtoConfig } from "@/app/logto";
@@ -82,8 +83,8 @@ function Unauthenticated({ notice }: { notice?: string }) {
     <main className="auth-shell">
       <section className="auth-panel">
         <div className="brand-row">
-          <span className="brand-mark">L</span>
-          <span>Lucan</span>
+          <Image alt="" className="brand-logo" height={36} priority src="/brand/reachcraft-mark.svg" width={36} />
+          <span>Reachcraft</span>
         </div>
         <h1>Turn your inputs into sharp LinkedIn drafts.</h1>
         <p>Generate from a topic, article, PDF, or YouTube video, then save the best version into your draft board.</p>

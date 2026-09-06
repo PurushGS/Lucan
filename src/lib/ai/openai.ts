@@ -11,7 +11,7 @@ export function getOpenAIClient() {
       baseURL: "https://openrouter.ai/api/v1",
       defaultHeaders: {
         "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3002",
-        "X-OpenRouter-Title": "Lucan",
+        "X-OpenRouter-Title": "Reachcraft",
       },
     });
     return client;

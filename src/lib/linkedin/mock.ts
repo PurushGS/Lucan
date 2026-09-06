@@ -6,8 +6,8 @@ import type {
 } from "./client";
 
 export const mockLinkedInProfile: LinkedInProfile = {
-  sub: "mock-lucan-founder",
-  name: "Lucan Test Creator",
+  sub: "mock-reachcraft-founder",
+  name: "Reachcraft Test Creator",
   picture: "https://media.licdn.com/dms/image/mock/profile-displayphoto-shrink_100_100/mock",
 };
 
