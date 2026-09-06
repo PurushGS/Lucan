@@ -1,7 +1,14 @@
 import { completeJson, getRewriteModels, getScoreModels, isRetryableAIError } from "./openai";
 import { parseJsonObject } from "./json";
-import { dnaPrompt, generationPrompt, rewritePrompt, scorePrompt } from "./prompts";
-import type { ContentDnaProfile, GenerationResult, PostScore, RewriteResult, SourceType } from "@/src/types/lucan";
+import { carouselPrompt, dnaPrompt, generationPrompt, rewritePrompt, scorePrompt } from "./prompts";
+import type {
+  CarouselGenerationResult,
+  ContentDnaProfile,
+  GenerationResult,
+  PostScore,
+  RewriteResult,
+  SourceType,
+} from "@/src/types/lucan";
 
 export async function generatePost(input: {
   sourceType: SourceType;
@@ -61,4 +68,14 @@ export async function rewritePost(input: { post: string; dna: ContentDnaProfile 
   }
 
   throw lastError instanceof Error ? lastError : new Error("All rewrite models failed.");
+}
+
+export async function generateCarouselContent(input: {
+  source: string;
+  dna: ContentDnaProfile | null;
+  slideCount: number;
+  templateName: string;
+}) {
+  const response = await completeJson(carouselPrompt(input), { temperature: 0.45 });
+  return parseJsonObject<CarouselGenerationResult>(response);
 }

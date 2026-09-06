@@ -117,3 +117,63 @@ export type RewriteResult = {
   post: string;
   changes: string[];
 };
+
+export type CreativeFormat = "square" | "carousel" | "story" | "banner";
+
+export type CreativeTemplateKind = "carousel" | "infographic" | "image";
+
+export type CreativeElement = {
+  id: string;
+  kind: "text" | "shape";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text?: string;
+  fill?: string;
+  stroke?: string;
+  color?: string;
+  fontSize?: number;
+  fontWeight?: number;
+  radius?: number;
+};
+
+export type CreativePage = {
+  id: string;
+  name: string;
+  background: string;
+  elements: CreativeElement[];
+};
+
+export type CreativeDocument = {
+  version: 1;
+  templateId: string;
+  format: CreativeFormat;
+  width: number;
+  height: number;
+  pages: CreativePage[];
+};
+
+export type CreativeDesign = {
+  id: string;
+  userId: string;
+  title: string;
+  kind: CreativeTemplateKind;
+  format: CreativeFormat;
+  width: number;
+  height: number;
+  document: CreativeDocument;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CarouselSlide = {
+  index: number;
+  headline: string;
+  body: string;
+};
+
+export type CarouselGenerationResult = {
+  title: string;
+  slides: CarouselSlide[];
+};

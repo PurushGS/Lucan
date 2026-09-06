@@ -105,6 +105,19 @@ async function createSchema() {
         raw_json text not null default '{}',
         synced_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
       )`,
+      `create table if not exists creative_designs (
+        id text primary key,
+        user_id text not null references users(id) on delete cascade,
+        title text not null,
+        kind text not null,
+        format text not null,
+        width integer not null,
+        height integer not null,
+        document_json text not null,
+        created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+        updated_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+      )`,
+      `create index if not exists creative_designs_user_updated_idx on creative_designs(user_id, updated_at desc)`,
     ],
     "write",
   );

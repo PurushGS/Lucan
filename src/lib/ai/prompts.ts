@@ -1,4 +1,11 @@
-import type { ContentDnaProfile, GenerationResult, PostScore, RewriteResult, SourceType } from "@/src/types/lucan";
+import type {
+  CarouselGenerationResult,
+  ContentDnaProfile,
+  GenerationResult,
+  PostScore,
+  RewriteResult,
+  SourceType,
+} from "@/src/types/lucan";
 
 export function generationPrompt(input: {
   sourceType: SourceType;
@@ -152,5 +159,48 @@ ${input.post.slice(0, 16000)}
 
 Return only JSON matching this TypeScript type:
 type Result = ${JSON.stringify({ post: "Rewritten LinkedIn post", changes: ["Specific change made"] } satisfies RewriteResult)}
+`;
+}
+
+export function carouselPrompt(input: {
+  source: string;
+  dna: ContentDnaProfile | null;
+  slideCount: number;
+  templateName: string;
+}) {
+  const dnaText = input.dna
+    ? JSON.stringify(input.dna, null, 2)
+    : "No Content DNA saved yet. Keep the carousel plain, specific, and human without pretending to know the user's personal style.";
+
+  return `
+Create LinkedIn carousel slide copy for Lucan Creative Studio.
+
+Rules:
+- Generate ${input.slideCount} slides.
+- Each slide should have one strong headline and one short body.
+- Avoid generic filler, fake numbers, fake quotes, and unverifiable claims.
+- Make the carousel useful even without visuals.
+- Match the selected template: ${input.templateName}.
+- When Content DNA is available, use it as global writing context for voice, topics, rhythm, and avoid-list.
+- When Content DNA is missing, do not invent a personal identity.
+- Keep each headline under 75 characters and each body under 180 characters.
+
+Content DNA:
+${dnaText}
+
+Source:
+${input.source.slice(0, 16000)}
+
+Return only JSON matching this TypeScript type:
+type Result = ${JSON.stringify({
+    title: "Short carousel title",
+    slides: [
+      {
+        index: 1,
+        headline: "Sharp slide headline",
+        body: "One useful supporting point.",
+      },
+    ],
+  } satisfies CarouselGenerationResult)}
 `;
 }

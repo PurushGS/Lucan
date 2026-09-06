@@ -12,6 +12,7 @@ import {
   Link2,
   Lightbulb,
   LogOut,
+  Palette,
   PenLine,
   Save,
   Send,
@@ -21,6 +22,7 @@ import {
   Youtube,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { CreativeStudio } from "@/components/creative-studio/creative-studio";
 import type {
   AppUser,
   ContentDnaProfile,
@@ -37,6 +39,7 @@ import type {
 type View =
   | "dashboard"
   | "generator"
+  | "studio"
   | "drafts"
   | "kanban"
   | "calendar"
@@ -83,6 +86,7 @@ const navGroups: Array<{
     items: [
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
       { id: "generator", label: "Post Generator", icon: PenLine },
+      { id: "studio", label: "Creative Studio", icon: Palette },
       { id: "drafts", label: "Drafts", icon: FileText },
       { id: "kanban", label: "Kanban", icon: Columns3 },
       { id: "calendar", label: "Calendar", icon: CalendarDays },
@@ -244,6 +248,7 @@ export function LucanApp({
 
         {view === "dashboard" && <Dashboard analytics={analytics} drafts={drafts} dna={dna} linkedinStatus={linkedinStatus} setView={setView} />}
         {view === "generator" && <Generator dna={dna} onSaved={refresh} />}
+        {view === "studio" && <CreativeStudio />}
         {view === "drafts" && <Drafts drafts={drafts} onUpdated={refresh} />}
         {view === "kanban" && <Kanban drafts={drafts} setView={setView} />}
         {view === "calendar" && <Calendar analytics={analytics} drafts={drafts} setView={setView} />}
