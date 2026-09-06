@@ -2,6 +2,7 @@ import { getLogtoContext } from "@logto/next/server-actions";
 import Link from "next/link";
 import { LucanApp } from "@/components/lucan-app";
 import { logtoConfig } from "@/app/logto";
+import { isRecoverableAuthError } from "@/src/lib/auth/errors";
 import { ensureUser } from "@/src/lib/db/users";
 import { getUserFacingError } from "@/src/lib/friendly-errors";
 import type { AppNotice, AuthAccountLinks } from "@/components/lucan-app";
@@ -56,22 +57,11 @@ async function getSafeLogtoContext() {
     const context = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
     return { ...context, expired: false };
   } catch (error) {
-    if (isExpiredAuthError(error)) {
+    if (isRecoverableAuthError(error)) {
       return { isAuthenticated: false, expired: true };
     }
     throw error;
   }
-}
-
-function isExpiredAuthError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    ("code" in error || "name" in error || "message" in error) &&
-    ((error as { code?: unknown }).code === "ERR_JWT_EXPIRED" ||
-      (error as { name?: unknown }).name === "JWTExpired" ||
-      String((error as { message?: unknown }).message ?? "").includes("JWTExpired"))
-  );
 }
 
 function buildAccountLinks(): AuthAccountLinks {
