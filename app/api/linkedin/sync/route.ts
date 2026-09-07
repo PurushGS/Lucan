@@ -16,6 +16,7 @@ import {
   fetchLinkedInProfileMetrics,
   LinkedInApiError,
 } from "@/src/lib/linkedin/client";
+import { getMissingLinkedInScopes } from "@/src/lib/linkedin/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,13 +29,22 @@ export async function POST() {
       return jsonError("Connect LinkedIn before generating Content DNA.", 409, "LINKEDIN_NOT_CONNECTED");
     }
 
+    const missingPostScopes = getMissingLinkedInScopes(account.scopes, ["r_member_social"]);
+    if (missingPostScopes.length) {
+      return jsonError(
+        "LinkedIn is connected for profile only. Add the LinkedIn member-post permission, request it in LINKEDIN_SCOPES, then reconnect LinkedIn to import real posts and build Content DNA.",
+        403,
+        "LINKEDIN_SCOPE_REQUIRED",
+      );
+    }
+
     const posts = await fetchLinkedInMemberPosts(account.accessToken, account.linkedinMemberId, 15);
     if (!posts.length) {
       return jsonError("No LinkedIn posts were found for this account yet.", 409, "NO_LINKEDIN_POSTS");
     }
 
     await saveLinkedInPosts({ userId: user.id, accountId: account.id, posts });
-    const analyticsError = await syncAnalytics(user.id, account.id, account.accessToken, account.linkedinMemberId, posts);
+    const analyticsError = await syncAnalytics(user.id, account.id, account.accessToken, account.linkedinMemberId, account.scopes, posts);
     const corpus = await getLinkedInPostCorpus(user.id, account.id, 15);
     const profile = await generateContentDna(corpus.join("\n\n---\n\n"));
     const stats = summarizePosts(corpus);
@@ -71,39 +81,54 @@ async function syncAnalytics(
   accountId: string,
   accessToken: string,
   linkedinMemberId: string,
+  scopes: string,
   posts: Array<{ urn: string }>,
 ) {
   const analyticsErrors: string[] = [];
 
-  try {
-    const analytics = await fetchLinkedInPostAnalytics(accessToken, posts);
-    await saveLinkedInPostAnalytics({ accountId, analytics });
-  } catch (error) {
-    if (error instanceof LinkedInApiError && error.status === 403) {
-      analyticsErrors.push(
-        "LinkedIn post analytics are not available yet. Request r_member_postAnalytics access to import impressions, reactions, comments, reposts, saves, clicks, and reach.",
-      );
-    } else {
-      throw error;
+  const missingPostAnalyticsScopes = getMissingLinkedInScopes(scopes, ["r_member_postAnalytics"]);
+  if (missingPostAnalyticsScopes.length) {
+    analyticsErrors.push(
+      "LinkedIn post analytics are not available yet. Request r_member_postAnalytics access to import impressions, reactions, comments, reposts, saves, clicks, and reach.",
+    );
+  } else {
+    try {
+      const analytics = await fetchLinkedInPostAnalytics(accessToken, posts);
+      await saveLinkedInPostAnalytics({ accountId, analytics });
+    } catch (error) {
+      if (error instanceof LinkedInApiError && error.status === 403) {
+        analyticsErrors.push(
+          "LinkedIn post analytics are not available yet. Request r_member_postAnalytics access to import impressions, reactions, comments, reposts, saves, clicks, and reach.",
+        );
+      } else {
+        throw error;
+      }
     }
   }
 
-  try {
-    const metrics = await fetchLinkedInProfileMetrics(accessToken, linkedinMemberId);
-    await saveLinkedInProfileMetrics({
-      userId,
-      accountId,
-      followerCount: metrics.followerCount,
-      connectionCount: metrics.connectionCount,
-      raw: metrics.raw,
-    });
-  } catch (error) {
-    if (error instanceof LinkedInApiError && error.status === 403) {
-      analyticsErrors.push(
-        "LinkedIn profile analytics are not available yet. Request r_member_profileAnalytics and r_1st_connections_size access to import followers and connection count.",
-      );
-    } else {
-      throw error;
+  const missingProfileScopes = getMissingLinkedInScopes(scopes, ["r_member_profileAnalytics", "r_1st_connections_size"]);
+  if (missingProfileScopes.length) {
+    analyticsErrors.push(
+      "LinkedIn profile analytics are not available yet. Request r_member_profileAnalytics and r_1st_connections_size access to import followers and connection count.",
+    );
+  } else {
+    try {
+      const metrics = await fetchLinkedInProfileMetrics(accessToken, linkedinMemberId);
+      await saveLinkedInProfileMetrics({
+        userId,
+        accountId,
+        followerCount: metrics.followerCount,
+        connectionCount: metrics.connectionCount,
+        raw: metrics.raw,
+      });
+    } catch (error) {
+      if (error instanceof LinkedInApiError && error.status === 403) {
+        analyticsErrors.push(
+          "LinkedIn profile analytics are not available yet. Request r_member_profileAnalytics and r_1st_connections_size access to import followers and connection count.",
+        );
+      } else {
+        throw error;
+      }
     }
   }
 

@@ -130,6 +130,17 @@ export async function getLinkedInAccountWithTokens(userId: string): Promise<Stor
   };
 }
 
+export async function getLinkedInAccountScopes(userId: string) {
+  await ensureSchema();
+  const result = await db.execute({
+    sql: "select scopes from linkedin_accounts where user_id = ?",
+    args: [userId],
+  });
+
+  const scopes = result.rows[0]?.scopes;
+  return scopes ? String(scopes) : null;
+}
+
 export async function upsertLinkedInAccount(input: {
   userId: string;
   linkedinMemberId: string;

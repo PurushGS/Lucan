@@ -76,7 +76,7 @@ type PostingSlot = {
   label: string;
   detail: string;
   score: number;
-  source: "linkedin" | "baseline";
+  source: "linkedin";
 };
 
 const navGroups: Array<{
@@ -178,7 +178,7 @@ export function LucanApp({
       const data = (await linkedinResponse.value.json()) as { status: LinkedInStatus };
       setLinkedInStatus(data.status);
     } else {
-      setLinkedInStatus({ provider: "mock", configured: false, connected: false, account: null, dna: null });
+      setLinkedInStatus({ provider: "live", configured: false, connected: false, missingScopes: [], account: null, dna: null });
     }
   }, []);
 
@@ -766,7 +766,7 @@ function ViralPosts({ analytics, setView }: { analytics: AnalyticsResponse | nul
       ) : (
         <RealDataEmptyState
           actionLabel="Sync LinkedIn"
-          message="Viral ranking needs your imported LinkedIn posts. No sample posts are shown here."
+          message="Viral ranking needs imported LinkedIn posts with reach and engagement data."
           onAction={() => setView("dna")}
           title="No real post history yet"
         />
@@ -1066,11 +1066,6 @@ function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
     return (
       <div className="status">
         <strong>No LinkedIn account connected.</strong>
-        {status.provider === "mock" ? (
-          <p className="fine-print" style={{ marginTop: 6 }}>
-            Sandbox mode is active. Connect LinkedIn to run the local consent, callback, sync, analytics, and DNA flow.
-          </p>
-        ) : null}
       </div>
     );
   }
@@ -1079,9 +1074,15 @@ function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
     <div className="status">
       <strong>{status.account.displayName || "LinkedIn account"}</strong>
       <p className="fine-print" style={{ marginTop: 6 }}>
-        {status.provider === "mock" ? "Sandbox connection" : "Live connection"} - Imported posts: {status.account.postsImported}
+        Live connection - Imported posts: {status.account.postsImported}
         {status.account.lastSyncedAt ? ` - Last synced ${new Date(status.account.lastSyncedAt).toLocaleString()}` : ""}
       </p>
+      {status.missingScopes.length ? (
+        <p className="fine-print" style={{ marginTop: 6 }}>
+          Profile is connected, but LinkedIn post import needs the member-post permission. Add it in LinkedIn Developers,
+          include it in LINKEDIN_SCOPES, then reconnect LinkedIn.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -1345,11 +1346,19 @@ function CompactDraftCard({ draft }: { draft: Draft }) {
 }
 
 function BestTimeList({ slots }: { slots: PostingSlot[] }) {
+  if (!slots.length) {
+    return (
+      <div className="status">
+        Best-time recommendations will appear after Reachcraft imports real LinkedIn posts and analytics.
+      </div>
+    );
+  }
+
   return (
     <div className="slot-grid">
       {slots.map((slot) => (
         <article className="slot-card" key={`${slot.label}-${slot.source}`}>
-          <span className={`slot-source ${slot.source}`}>{slot.source === "linkedin" ? "LinkedIn data" : "Baseline"}</span>
+          <span className={`slot-source ${slot.source}`}>LinkedIn data</span>
           <strong>{slot.label}</strong>
           <p>{slot.detail}</p>
         </article>
@@ -1485,11 +1494,7 @@ function getBestPostingSlots(linkedin: LinkedInDashboardAnalytics | null | undef
     }));
   }
 
-  return [
-    { label: "Tue 9:00 AM", detail: "Baseline slot until LinkedIn history is synced.", score: 0, source: "baseline" },
-    { label: "Wed 12:30 PM", detail: "Baseline slot until enough real post analytics exist.", score: 0, source: "baseline" },
-    { label: "Thu 5:30 PM", detail: "Baseline slot, not measured from your account yet.", score: 0, source: "baseline" },
-  ];
+  return [];
 }
 
 function getTopLinkedInPosts(linkedin: LinkedInDashboardAnalytics | null | undefined, limit: number) {

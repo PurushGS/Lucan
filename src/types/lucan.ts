@@ -80,9 +80,10 @@ export type LinkedInDashboardAnalytics = {
 };
 
 export type LinkedInStatus = {
-  provider: "live" | "mock";
+  provider: "live";
   configured: boolean;
   connected: boolean;
+  missingScopes: string[];
   account: LinkedInAccount | null;
   dna: ContentDnaRecord | null;
 };

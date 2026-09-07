@@ -78,14 +78,6 @@ button {
   max-width: 560px;
 }
 
-.mock-permissions {
-  margin-top: 24px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfdfd;
-}
-
 .brand-row {
   display: inline-flex;
   align-items: center;
@@ -667,10 +659,6 @@ select:focus {
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
-}
-
-.slot-source.baseline {
-  color: var(--amber);
 }
 
 .kanban-board {
