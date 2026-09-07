@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { CreativeStudio } from "@/components/creative-studio/creative-studio";
 import { getUserFacingError } from "@/src/lib/friendly-errors";
 import type {
@@ -78,6 +79,27 @@ type PostingSlot = {
   score: number;
   source: "linkedin";
 };
+
+type SyncStage = "profile" | "permissions" | "posts" | "analytics" | "dna";
+type SyncStepState = "pending" | "active" | "complete" | "skipped" | "error";
+type SyncStep = {
+  stage: SyncStage;
+  label: string;
+  status: SyncStepState;
+  message: string;
+};
+type LinkedInSyncEvent =
+  | { type: "step"; stage: SyncStage; status: Exclude<SyncStepState, "pending" | "error">; message: string }
+  | { type: "complete"; message: string; analyticsError: string | null }
+  | { type: "error"; error: { code: string; message: string; status: number }; stage?: SyncStage };
+
+const syncStages: Array<{ stage: SyncStage; label: string }> = [
+  { stage: "profile", label: "Profile" },
+  { stage: "permissions", label: "Permissions" },
+  { stage: "posts", label: "Posts" },
+  { stage: "analytics", label: "Analytics" },
+  { stage: "dna", label: "Content DNA" },
+];
 
 const navGroups: Array<{
   label: string;
@@ -880,26 +902,17 @@ function ContentDna({
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [syncSteps, setSyncSteps] = useState(createInitialSyncSteps);
 
   async function syncDna() {
-    setBusy(true);
-    setError("");
-    setStatus("Importing LinkedIn posts...");
-    const response = await fetch("/api/linkedin/sync", { method: "POST" });
-    const payload = await readPayload(response);
-
-    if (!response.ok) {
-      setError(getUserFacingError(payload, "Could not sync Content DNA. Please try again."));
-      setStatus("");
-    } else {
-      setStatus(
-        typeof payload.analyticsError === "string"
-          ? `Content DNA saved. ${payload.analyticsError}`
-          : "Content DNA saved with LinkedIn analytics.",
-      );
-      await onUpdated();
-    }
-    setBusy(false);
+    await syncLinkedInWithProgress({
+      onUpdated,
+      setBusy,
+      setError,
+      setStatus,
+      setSyncSteps,
+      fallbackError: "Could not sync Content DNA. Please try again.",
+    });
   }
 
   return (
@@ -936,6 +949,7 @@ function ContentDna({
             {busy ? "Syncing..." : "Sync posts and rebuild DNA"}
           </button>
         </div>
+        <SyncProgressPanel steps={syncSteps} />
         {status && <div className="status" style={{ marginTop: 12 }}>{status}</div>}
         {error && <div className="status error" style={{ marginTop: 12 }}>{error}</div>}
       </section>
@@ -957,24 +971,17 @@ function Settings({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const [syncSteps, setSyncSteps] = useState(createInitialSyncSteps);
 
   async function sync() {
-    setBusy(true);
-    setError("");
-    setStatus("");
-    const response = await fetch("/api/linkedin/sync", { method: "POST" });
-    const payload = await readPayload(response);
-    if (!response.ok) {
-      setError(getUserFacingError(payload, "Could not sync LinkedIn. Please try again."));
-    } else {
-      setStatus(
-        typeof payload.analyticsError === "string"
-          ? `Content DNA synced. ${payload.analyticsError}`
-          : "Content DNA and LinkedIn analytics synced.",
-      );
-      await onUpdated();
-    }
-    setBusy(false);
+    await syncLinkedInWithProgress({
+      onUpdated,
+      setBusy,
+      setError,
+      setStatus,
+      setSyncSteps,
+      fallbackError: "Could not sync LinkedIn. Please try again.",
+    });
   }
 
   return (
@@ -1024,6 +1031,7 @@ function Settings({
             {busy ? "Syncing..." : "Sync Content DNA"}
           </button>
         </div>
+        <SyncProgressPanel steps={syncSteps} />
         {status && <div className="status" style={{ marginTop: 12 }}>{status}</div>}
         {error && <div className="status error" style={{ marginTop: 12 }}>{error}</div>}
       </section>
@@ -1036,6 +1044,25 @@ function AccountDetail({ label, value }: { label: string; value: string }) {
     <div className="settings-row">
       <span>{label}</span>
       <strong>{value}</strong>
+    </div>
+  );
+}
+
+function SyncProgressPanel({ steps }: { steps: SyncStep[] }) {
+  const hasProgress = steps.some((step) => step.status !== "pending");
+  if (!hasProgress) return null;
+
+  return (
+    <div aria-live="polite" className="sync-progress" role="status">
+      {steps.map((step) => (
+        <div className={`sync-step ${step.status}`} key={step.stage}>
+          <span className="sync-dot">{step.status === "complete" ? <CheckCircle2 size={14} /> : null}</span>
+          <div>
+            <strong>{step.label}</strong>
+            <p>{step.message || "Waiting"}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -1071,18 +1098,27 @@ function LinkedInConnection({ status }: { status: LinkedInStatus | null }) {
   }
 
   return (
-    <div className="status">
-      <strong>{status.account.displayName || "LinkedIn account"}</strong>
-      <p className="fine-print" style={{ marginTop: 6 }}>
-        Live connection - Imported posts: {status.account.postsImported}
-        {status.account.lastSyncedAt ? ` - Last synced ${new Date(status.account.lastSyncedAt).toLocaleString()}` : ""}
-      </p>
-      {status.missingScopes.length ? (
+    <div className="status linkedin-connection-card">
+      <span
+        aria-label="LinkedIn profile picture"
+        className="linkedin-avatar"
+        style={status.account.picture ? { backgroundImage: `url("${status.account.picture}")` } : undefined}
+      >
+        {status.account.picture ? null : getNameInitials(status.account.displayName)}
+      </span>
+      <div>
+        <strong>{status.account.displayName || "LinkedIn account"}</strong>
         <p className="fine-print" style={{ marginTop: 6 }}>
-          Profile is connected, but LinkedIn post import needs the member-post permission. Add it in LinkedIn Developers,
-          include it in LINKEDIN_SCOPES, then reconnect LinkedIn.
+          Live connection - Imported posts: {status.account.postsImported}
+          {status.account.lastSyncedAt ? ` - Last synced ${new Date(status.account.lastSyncedAt).toLocaleString()}` : ""}
         </p>
-      ) : null}
+        {status.missingScopes.length ? (
+          <p className="fine-print" style={{ marginTop: 6 }}>
+            Profile is connected, but LinkedIn data import needs post and analytics permissions. Add the approved scopes in
+            LINKEDIN_SCOPES, then reconnect LinkedIn.
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -1431,6 +1467,120 @@ function DraftList({
   );
 }
 
+function createInitialSyncSteps(): SyncStep[] {
+  return syncStages.map((step) => ({ ...step, status: "pending", message: "" }));
+}
+
+async function syncLinkedInWithProgress({
+  fallbackError,
+  onUpdated,
+  setBusy,
+  setError,
+  setStatus,
+  setSyncSteps,
+}: {
+  fallbackError: string;
+  onUpdated: () => Promise<void>;
+  setBusy: Dispatch<SetStateAction<boolean>>;
+  setError: Dispatch<SetStateAction<string>>;
+  setStatus: Dispatch<SetStateAction<string>>;
+  setSyncSteps: Dispatch<SetStateAction<SyncStep[]>>;
+}) {
+  setBusy(true);
+  setError("");
+  setStatus("");
+  setSyncSteps(createInitialSyncSteps());
+
+  let successMessage = "Content DNA and LinkedIn analytics synced.";
+  let failureMessage = "";
+  let failureStage: SyncStage | undefined;
+
+  try {
+    const response = await fetch("/api/linkedin/sync", {
+      method: "POST",
+      headers: { Accept: "application/x-ndjson" },
+    });
+
+    if (!response.body || !response.headers.get("content-type")?.includes("application/x-ndjson")) {
+      const payload = await readPayload(response);
+      if (!response.ok) throw new Error(getUserFacingError(payload, fallbackError));
+
+      setStatus(
+        typeof payload.analyticsError === "string"
+          ? `Content DNA synced. ${payload.analyticsError}`
+          : successMessage,
+      );
+      await onUpdated();
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      buffer += decoder.decode(value, { stream: !done });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const event = JSON.parse(line) as LinkedInSyncEvent;
+
+        if (event.type === "step") {
+          setSyncSteps((steps) => applySyncStep(steps, event));
+        }
+
+        if (event.type === "complete") {
+          successMessage = event.message;
+        }
+
+        if (event.type === "error") {
+          failureMessage = event.error.message || fallbackError;
+          failureStage = event.stage ?? (event.error.code === "LINKEDIN_SCOPE_REQUIRED" ? "permissions" : undefined);
+        }
+      }
+
+      if (done) break;
+    }
+
+    if (failureMessage) {
+      setSyncSteps((steps) => markSyncStepError(steps, failureStage, failureMessage));
+      setError(failureMessage);
+      return;
+    }
+
+    setStatus(successMessage);
+    await onUpdated();
+  } catch (error) {
+    const message = error instanceof Error && error.message ? error.message : fallbackError;
+    setError(message);
+    setSyncSteps((steps) => markSyncStepError(steps, failureStage, message));
+  } finally {
+    setBusy(false);
+  }
+}
+
+function applySyncStep(steps: SyncStep[], event: Extract<LinkedInSyncEvent, { type: "step" }>): SyncStep[] {
+  return steps.map((step) => (
+    step.stage === event.stage
+      ? { ...step, status: event.status, message: event.message }
+      : step
+  ));
+}
+
+function markSyncStepError(steps: SyncStep[], stage: SyncStage | undefined, message: string): SyncStep[] {
+  const fallbackStage = steps.find((step) => step.status === "active")?.stage ?? "permissions";
+  const errorStage = stage ?? fallbackStage;
+
+  return steps.map((step) => (
+    step.stage === errorStage
+      ? { ...step, status: "error" as const, message }
+      : step
+  ));
+}
+
 async function readPayload(response: Response) {
   const text = await response.text();
   if (!text) return {};
@@ -1452,7 +1602,12 @@ function formatOptionalNumber(value: number | null | undefined) {
 
 function getInitials(user: AppUser) {
   const source = user.name || user.email || "Reachcraft user";
-  return source
+  return getNameInitials(source);
+}
+
+function getNameInitials(source: string | null | undefined) {
+  const value = source || "Reachcraft user";
+  return value
     .split(/[\s@._-]+/)
     .filter(Boolean)
     .slice(0, 2)

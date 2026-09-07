@@ -21,7 +21,14 @@ export async function GET() {
         provider: getLinkedInProvider(),
         configured: isLinkedInConfigured(),
         connected: Boolean(account),
-        missingScopes: accountScopes ? getMissingLinkedInScopes(accountScopes, ["r_member_social"]) : [],
+        missingScopes: accountScopes
+          ? getMissingLinkedInScopes(accountScopes, [
+              "r_member_social",
+              "r_member_postAnalytics",
+              "r_member_profileAnalytics",
+              "r_1st_connections_size",
+            ])
+          : [],
         account,
         dna,
       },

@@ -512,6 +512,69 @@ select:focus {
   background: #eefbf8;
 }
 
+.sync-progress {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfd;
+}
+
+.sync-step {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  color: var(--muted);
+}
+
+.sync-step strong {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.sync-step p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.sync-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  color: var(--teal-dark);
+}
+
+.sync-step.active .sync-dot {
+  border-color: var(--blue);
+  background: #e8f2ff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.sync-step.complete .sync-dot {
+  border-color: var(--teal);
+  background: #e5f8f5;
+}
+
+.sync-step.skipped .sync-dot {
+  border-color: var(--amber);
+  background: #fff7e6;
+}
+
+.sync-step.error .sync-dot {
+  border-color: #f3a4b5;
+  background: #fff0f4;
+}
+
 .notice {
   display: flex;
   align-items: center;
@@ -806,6 +869,29 @@ select:focus {
   background-size: cover;
   color: var(--teal-dark);
   font-weight: 800;
+}
+
+.linkedin-connection-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.linkedin-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(14, 165, 233, 0.24);
+  border-radius: 999px;
+  background: #e8f2ff;
+  background-position: center;
+  background-size: cover;
+  color: var(--blue);
+  font-size: 15px;
+  font-weight: 860;
 }
 
 .settings-list {
