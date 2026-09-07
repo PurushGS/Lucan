@@ -33,7 +33,7 @@ export function getLinkedInConfig(): LinkedInConfig {
     clientId: process.env.LINKEDIN_CLIENT_ID,
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
     redirectUri: process.env.LINKEDIN_REDIRECT_URI || `${baseUrl}/api/linkedin/callback`,
-    scopes: process.env.LINKEDIN_SCOPES || "openid profile email",
+    scopes: process.env.LINKEDIN_SCOPES || "openid profile email w_member_social",
     apiVersion: process.env.LINKEDIN_API_VERSION || "202607",
     baseUrl,
   };

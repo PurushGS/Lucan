@@ -3,6 +3,7 @@ import { requireUser } from "@/src/lib/auth/session";
 import { getDraft, markDraftPublished } from "@/src/lib/db/drafts";
 import { getLinkedInAccountWithTokens } from "@/src/lib/db/linkedin";
 import { LinkedInApiError, publishLinkedInPost } from "@/src/lib/linkedin/client";
+import { getMissingLinkedInScopes } from "@/src/lib/linkedin/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,6 +20,14 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
 
     if (!account) {
       return jsonError("Connect LinkedIn before publishing.", 409, "LINKEDIN_NOT_CONNECTED");
+    }
+
+    if (getMissingLinkedInScopes(account.scopes, ["w_member_social"]).length) {
+      return jsonError(
+        "LinkedIn is connected without posting permission. Reconnect LinkedIn after enabling Share on LinkedIn so Reachcraft can publish posts.",
+        403,
+        "LINKEDIN_PUBLISH_SCOPE_REQUIRED",
+      );
     }
 
     const result = await publishLinkedInPost({
