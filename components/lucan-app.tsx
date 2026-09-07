@@ -931,11 +931,7 @@ function ContentDna({
         <h2>LinkedIn account</h2>
         <LinkedInConnection status={linkedinStatus} />
         <div className="actions" style={{ marginTop: 14 }}>
-          {!linkedinStatus?.connected ? (
-            <a className="primary-button as-link" href="/api/linkedin/connect">
-              Connect LinkedIn
-            </a>
-          ) : null}
+          <LinkedInConnectAction status={linkedinStatus} />
           <button className="secondary-button" disabled={!linkedinStatus?.connected || busy} onClick={syncDna} type="button">
             {busy ? "Syncing..." : "Sync posts and rebuild DNA"}
           </button>
@@ -1023,11 +1019,7 @@ function Settings({
         <h2>LinkedIn</h2>
         <LinkedInConnection status={linkedinStatus} />
         <div className="actions" style={{ marginTop: 14 }}>
-          {!linkedinStatus?.connected ? (
-            <a className="primary-button as-link" href="/api/linkedin/connect">
-              Connect LinkedIn
-            </a>
-          ) : null}
+          <LinkedInConnectAction status={linkedinStatus} />
           <button className="secondary-button" disabled={!linkedinStatus?.connected || busy} onClick={sync} type="button">
             {busy ? "Syncing..." : "Sync Content DNA"}
           </button>
@@ -1045,6 +1037,16 @@ function AccountDetail({ label, value }: { label: string; value: string }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function LinkedInConnectAction({ status }: { status: LinkedInStatus | null }) {
+  if (!status?.configured) return null;
+
+  return (
+    <a className="primary-button as-link" href="/api/linkedin/connect">
+      {status.connected ? "Reconnect LinkedIn" : "Connect LinkedIn"}
+    </a>
   );
 }
 
