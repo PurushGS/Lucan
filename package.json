@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "db:push": "node --env-file=.env.local --import tsx scripts/push-schema.ts",
+    "db:seed-demo": "node --env-file=.env.local --import tsx scripts/seed-demo.ts",
     "smoke:ai": "node --env-file=.env.local --import tsx scripts/smoke-ai.ts",
     "smoke:rewrite": "node --env-file=.env.local --import tsx scripts/smoke-rewrite.ts",
     "smoke:pdf": "node --env-file=.env.local --import tsx scripts/smoke-pdf.ts"
